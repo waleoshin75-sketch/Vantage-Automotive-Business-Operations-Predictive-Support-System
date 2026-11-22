@@ -1,0 +1,7 @@
+# libraries the models were trained with (Python 3.14.6).
+# scikit-learn and numpy MUST match to load the models safely.
+scikit-learn==1.9.0
+numpy==2.4.6
+pandas==3.0.3
+joblib==1.5.3
+streamlit
