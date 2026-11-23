@@ -98,7 +98,7 @@ Vantage Motors Global is a fictional multinational carmaker with customers, vehi
 ├── README.md
 ├── sql/                 01 audit · 02 cleaning · 03 features · 04 relationships · 06 analytical base tables
 ├── python/              05 EDA · 06 load ABT · 07 encode · 08 X/y · 09 split · 10 scale
-│                        11 train · 12 predict · 13 compare · 14 evaluate (one set per objective)
+│                        11 train (+ 11b training charts) · 12 predict · 13 compare · 14 evaluate (one set per objective)
 │                        15 business analysis · 16 scorecard · 17 save · 18 package · 19 findings
 │                        20 recommendations · 21 impact · 22 conclusion
 ├── streamlit/           app.py · requirements.txt
@@ -1296,6 +1296,23 @@ Script: `python/05_eda.py`. It reads the three feature tables from SQL Server, c
 </p>
 <p align="center"><em>Top correlations with fraud</em></p>
 
+#### Objective 3: customer segmentation (behaviour)
+
+<p align="center">
+  <img src="images/eda_18_behaviour_distributions.png" alt="Distribution of the behaviour features used for segmentation (log scale)" width="100%">
+</p>
+<p align="center"><em>Distribution of the behaviour features used for segmentation (log scale)</em></p>
+
+<p align="center">
+  <img src="images/eda_19_behaviour_correlation.png" alt="Correlation between behaviour features" width="100%">
+</p>
+<p align="center"><em>Correlation between behaviour features</em></p>
+
+<p align="center">
+  <img src="images/eda_20_value_concentration.png" alt="Customer share against spend share" width="100%">
+</p>
+<p align="center"><em>Customer share against spend share</em></p>
+
 #### Objective 4: customer lifetime value
 
 <p align="center">
@@ -1334,23 +1351,6 @@ Script: `python/05_eda.py`. It reads the three feature tables from SQL Server, c
   <img src="images/eda_17_service_correlations.png" alt="Top correlations with service cost" width="100%">
 </p>
 <p align="center"><em>Top correlations with service cost</em></p>
-
-#### Objective 3: customer behaviour (segmentation)
-
-<p align="center">
-  <img src="images/eda_18_behaviour_distributions.png" alt="Distribution of the behaviour features used for segmentation (log scale)" width="100%">
-</p>
-<p align="center"><em>Distribution of the behaviour features used for segmentation (log scale)</em></p>
-
-<p align="center">
-  <img src="images/eda_19_behaviour_correlation.png" alt="Correlation between behaviour features" width="100%">
-</p>
-<p align="center"><em>Correlation between behaviour features</em></p>
-
-<p align="center">
-  <img src="images/eda_20_value_concentration.png" alt="Customer share against spend share" width="100%">
-</p>
-<p align="center"><em>Customer share against spend share</em></p>
 
 ### Code: exploratory data analysis (Python)
 
@@ -2293,7 +2293,7 @@ print("\nSaved: ready_<model>.pkl, scaler_<model>.joblib, prep_<model>.json for"
 
 ## 14. Train Model
 
-Scripts: `python/11_train_<objective>.py`. Five candidate models for each classification and regression objective:
+Scripts: `python/11_train_<objective>.py`, plus `python/11b_train_charts.py` for the training charts. Five candidate models for each classification and regression objective:
 
 | Classification (churn, fraud) | Regression (lifetime value, service cost) |
 |---|---|
@@ -2314,15 +2314,45 @@ Scripts: `python/11_train_<objective>.py`. Five candidate models for each classi
 
 ### Charts
 
-<p align="center">
-  <img src="images/segmentation_11_1_choosing_k.png" alt="Objective 3: choosing the number of segments (k) on train data" width="100%">
-</p>
-<p align="center"><em>Objective 3: choosing the number of segments (k) on train data</em></p>
+#### Objective 1: customer churn
 
 <p align="center">
-  <img src="images/segmentation_11_2_segments_overview.png" alt="Objective 3: the three segments at a glance" width="100%">
+  <img src="images/churn_11_1_model_comparison.png" alt="Churn: five candidate models in cross-validation, train against cross-validated score" width="100%">
 </p>
-<p align="center"><em>Objective 3: the three segments at a glance</em></p>
+<p align="center"><em>Churn: five candidate models in cross-validation, train against cross-validated score</em></p>
+
+#### Objective 2: fraud detection
+
+<p align="center">
+  <img src="images/fraud_11_1_model_comparison.png" alt="Fraud: five candidate models in cross-validation, train against cross-validated score" width="100%">
+</p>
+<p align="center"><em>Fraud: five candidate models in cross-validation, train against cross-validated score</em></p>
+
+#### Objective 3: customer segmentation
+
+<p align="center">
+  <img src="images/segmentation_11_1_choosing_k.png" alt="Segmentation: choosing the number of segments (k) on train data" width="100%">
+</p>
+<p align="center"><em>Segmentation: choosing the number of segments (k) on train data</em></p>
+
+<p align="center">
+  <img src="images/segmentation_11_2_segments_overview.png" alt="Segmentation: the three segments at a glance" width="100%">
+</p>
+<p align="center"><em>Segmentation: the three segments at a glance</em></p>
+
+#### Objective 4: customer lifetime value
+
+<p align="center">
+  <img src="images/clv_11_1_model_comparison.png" alt="Lifetime value: five candidate models in cross-validation, train against cross-validated score" width="100%">
+</p>
+<p align="center"><em>Lifetime value: five candidate models in cross-validation, train against cross-validated score</em></p>
+
+#### Objective 5: service cost
+
+<p align="center">
+  <img src="images/service_11_1_model_comparison.png" alt="Service cost: five candidate models in cross-validation, train against cross-validated score" width="100%">
+</p>
+<p align="center"><em>Service cost: five candidate models in cross-validation, train against cross-validated score</em></p>
 
 ### Code: train model (Python)
 
@@ -2797,6 +2827,76 @@ print("Reading guide: MAE = the average dollar error per job (lower is better). 
 joblib.dump({"models": fitted, "champion": champion, "features": X_train.columns.tolist(), "target_transform": "log1p"}, f"{DATA}/service_models.joblib")
 res.to_csv(f"{DATA}/service_training_summary.csv", index=False)
 print("Saved: service_models.joblib (all 5 trained models + champion + feature list), service_training_summary.csv")
+```
+
+#### Training charts for objectives 1, 2, 4 and 5
+
+```python
+# =====================================================================
+# VANTAGE MOTORS GLOBAL - STEP 11b: TRAINING CHARTS (objectives 1, 2, 4, 5)
+# Draws one chart per objective from the training summaries saved by step 11:
+#   left   = cross-validated score of the five candidate models (champion highlighted)
+#   middle = train score vs cross-validated score (the gap shows over-fitting)
+#   right  = a second view of the same models (ROC AUC for classification, R2 for regression)
+# Reads abt_data/<objective>_training_summary.csv and <objective>_models.joblib. Changes nothing.
+# Saves <objective>_outputs/11_1_model_comparison.png (segmentation already saves its own training charts in step 11).
+# Needs: pandas matplotlib joblib scikit-learn. Set SHOW = False to save charts only.
+# =====================================================================
+import os
+import pandas as pd
+import matplotlib.pyplot as plt
+import joblib
+
+DATA, SHOW = "abt_data", True
+BLUE, RED, GREY = "#2F6DB5", "#C0392B", "#9AA5B1"
+plt.rcParams.update({"axes.spines.top": False, "axes.spines.right": False})
+
+# objective -> (title, task, main score, its spread, train score, second view, second label)
+SPEC = {
+    "churn":   ("Objective 1: customer churn",           "clf", "cv_pr_auc", "cv_pr_auc_std", "train_pr_auc", "cv_roc_auc", "cross-validated ROC AUC"),
+    "fraud":   ("Objective 2: fraud detection",          "clf", "cv_pr_auc", "cv_pr_auc_std", "train_pr_auc", "cv_roc_auc", "cross-validated ROC AUC"),
+    "clv":     ("Objective 4: customer lifetime value",  "reg", "cv_mae",    "cv_mae_std",    "train_mae",    "cv_r2",      "cross-validated R2"),
+    "service": ("Objective 5: service cost",             "reg", "cv_mae",    "cv_mae_std",    "train_mae",    "cv_r2",      "cross-validated R2"),
+}
+
+for obj, (title, task, main, spread, train, second, second_label) in SPEC.items():
+    f = f"{DATA}/{obj}_training_summary.csv"
+    if not os.path.exists(f):
+        print(f"skipped {obj}: {f} not found (run step 11 for this objective first)"); continue
+    res = pd.read_csv(f)
+    champion = joblib.load(f"{DATA}/{obj}_models.joblib")["champion"]
+    res = res.sort_values(main, ascending=(task == "reg")).reset_index(drop=True)   # best model first
+    colours = [RED if m == champion else BLUE for m in res["model"]]
+    better = "higher is better" if task == "clf" else "lower is better"
+    metric = "PR AUC" if task == "clf" else "MAE (USD)"
+
+    fig, ax = plt.subplots(1, 3, figsize=(16, 4.6))
+    ax[0].barh(res["model"], res[main], xerr=res[spread], color=colours, ecolor="#444", capsize=3)
+    ax[0].invert_yaxis(); ax[0].set_xlabel(f"cross-validated {metric} ({better})")
+    ax[0].set_title("Cross-validation on the train set\n(red = champion)")
+    for i, (v, e) in enumerate(zip(res[main], res[spread])):
+        ax[0].text(v + e, i, f"  {v:.3f}" if task == "clf" else f"  {v:,.0f}", va="center", fontsize=8)
+    ax[0].margins(x=0.15)
+
+    y = range(len(res)); h = 0.38
+    ax[1].barh([i - h / 2 for i in y], res[train], height=h, color=GREY, label="train")
+    ax[1].barh([i + h / 2 for i in y], res[main], height=h, color=colours, label="cross-validated")
+    ax[1].set_yticks(list(y)); ax[1].set_yticklabels(res["model"]); ax[1].invert_yaxis()
+    ax[1].set_xlabel(metric); ax[1].set_title("Train vs cross-validated\n(a big gap means over-fitting)"); ax[1].legend(fontsize=8, loc="lower right")
+
+    ax[2].barh(res["model"], res[second], color=colours)
+    ax[2].invert_yaxis(); ax[2].set_xlabel(second_label); ax[2].set_title("Second view of the same models")
+    if task == "reg": ax[2].axvline(0, color="black", lw=.8)
+    for i, v in enumerate(res[second]):
+        ax[2].text(v, i, f" {v:.3f}", va="center", fontsize=8)
+
+    plt.suptitle(f"{title}: five candidate models, champion = {champion}", y=1.03, fontsize=12)
+    plt.tight_layout()
+    os.makedirs(f"{obj}_outputs", exist_ok=True)
+    plt.savefig(f"{obj}_outputs/11_1_model_comparison.png", dpi=150, bbox_inches="tight")
+    if SHOW: plt.show()
+    plt.close()
+    print(f"saved {obj}_outputs/11_1_model_comparison.png (champion: {champion})")
 ```
 
 ---
@@ -5252,11 +5352,11 @@ Script: `python/18_download_model_scaler_features.py`. It packs `deployment/` in
 
 The script reopens the zip and loads all 26 files from inside it to prove the package is not damaged. Training versions are pinned (scikit-learn 1.9.0, pandas 3.0.3, numpy 2.4.6, joblib 1.5.3) because models saved with one scikit-learn version can fail to load with another.
 
-### Live app
+### Streamlit app
 
-**[Open the Streamlit app](https://vantage-automotive-business-operations-predictive-support-syst.streamlit.app/)**
+**[Open the live Streamlit app](https://vantage-automotive-business-operations-predictive-support-syst.streamlit.app/)**
 
-Pages: Home, Customer churn, Fraud detection, Segmentation and behaviour, Lifetime value, Service cost, Customer 360 (churn, value and segment in one form), Batch scoring (upload a CSV, download predictions) and Model performance. Each form shows the most important inputs and fills the rest with typical training values. A banner warns when a model is not marked STRONG.
+The app loads the saved joblib files from `models/` and runs the same pipeline as training: raw inputs go through the saved encoding recipe, then the saved prep and scaler, then the model. Pages: Home, Customer churn, Fraud detection, Segmentation and behaviour, Lifetime value, Service cost, Customer 360 (churn, value and segment in one form), Batch scoring (upload a CSV, download predictions) and Model performance. Each form shows the most important inputs and fills the rest with typical training values. A banner warns when a model is not marked STRONG.
 
 ### Run the app locally
 
@@ -5377,6 +5477,443 @@ except ImportError:                                   # on your own computer the
     print(f"Your download is ready: {os.path.abspath(ZIP_NAME)}")
 ```
 
+### Code: Streamlit app (`app.py`)
+
+```python
+# =====================================================================
+# VANTAGE AUTOMOTIVE - BUSINESS OPERATIONS PREDICTIVE SUPPORT SYSTEM (Streamlit app)
+# One simple app that uses the five models you trained and saved in steps 17-18:
+#   1. Churn           - how likely is a customer to leave?          (classification)
+#   2. Fraud           - how likely is a transaction to be fraud?    (classification)
+#   3. Segmentation    - which customer segment does a customer belong to? (clustering)
+#   4. Lifetime value  - how much will a customer spend next year?   (regression)
+#   5. Service cost    - how much will a service job cost?           (regression)
+#
+# HOW TO RUN (in the VS Code terminal, inside the folder that holds this file):
+#       pip install streamlit pandas numpy scikit-learn joblib
+#       streamlit run app.py
+#
+# FOLDER LAYOUT (unzip vantage_deployment_package.zip next to app.py):
+#       my_app/
+#         app.py
+#         models/   <- the 26 .joblib files from the zip  (churn_model.joblib, churn_scaler.joblib, ...)
+#
+# IMPORTANT: install the SAME library versions the models were trained with (they are in the zip's requirements.txt),
+# or the models may refuse to load.
+# =====================================================================
+import os
+import numpy as np
+import pandas as pd
+import joblib
+import streamlit as st
+
+st.set_page_config(page_title="Vantage Automotive Predictive Support System", page_icon="🚗", layout="wide")
+
+# ---------------------------------------------------------------------
+# 1. SETTINGS (the only things you may want to change)
+# ---------------------------------------------------------------------
+MODEL_DIR = "models"                  # folder with the .joblib files
+HIGH_VALUE_MULTIPLE = 1.5             # a customer is "high value" if predicted spend >= 1.5 x the average customer
+TOP_FIELDS = 6                        # how many of the most important inputs each form shows
+NAMES = ["churn", "fraud", "segmentation", "clv", "service"]
+TITLES = {"churn": "Customer churn", "fraud": "Fraud detection", "segmentation": "Customer segmentation",
+          "clv": "Customer lifetime value", "service": "Service cost"}
+# which encoding recipe (from encoding_spec.joblib) each model uses
+SPEC_OF = {"churn": "customer", "clv": "customer", "segmentation": "customer", "fraud": "fraud", "service": "service"}
+ID_COLUMNS = ["customer_id", "txn_id", "service_id", "vehicle_id"]
+
+
+# ---------------------------------------------------------------------
+# 2. LOAD THE SAVED FILES (cached, so they load only once)
+# ---------------------------------------------------------------------
+@st.cache_resource
+def load_everything():
+    bundle = {}
+    for n in NAMES:
+        bundle[n] = {part: joblib.load(os.path.join(MODEL_DIR, f"{n}_{part}.joblib")) for part in ["model", "scaler", "features", "prep", "meta"]}
+    spec = joblib.load(os.path.join(MODEL_DIR, "encoding_spec.joblib"))
+    return bundle, spec
+
+
+try:
+    B, SPEC = load_everything()
+except Exception as err:
+    st.error(f"Could not load the model files from the '{MODEL_DIR}' folder.\n\n{err}")
+    st.info("Check that the 26 .joblib files are inside the folder, and that scikit-learn, numpy and pandas have the versions listed in requirements.txt.")
+    st.stop()
+
+
+# ---------------------------------------------------------------------
+# 3. SMALL HELPERS
+# ---------------------------------------------------------------------
+def nice(name):
+    """customer_tenure_months -> Customer tenure months"""
+    text = name.replace("_usd", " (USD)").replace("_", " ").strip()
+    return text[0].upper() + text[1:]
+
+
+def clean_name(text):
+    import re
+    return re.sub(r"[^0-9A-Za-z]+", "_", str(text)).strip("_")
+
+
+def encode(df, spec):
+    """Turn raw columns (text, tiers) into model columns. Same recipe as step 7. Missing text columns use the most common level."""
+    out = df.copy()
+    for col, mapping in spec["ordinal"].items():
+        if col in out:
+            out[col] = out[col].astype("string").map(mapping).astype("float")
+    for col, info in spec["onehot"].items():
+        s = out[col].astype("string").fillna("Missing") if col in out else pd.Series([info["baseline"]] * len(out), index=out.index, dtype="string")
+        for cat in info["kept"]:
+            out[f"{col}_{clean_name(cat)}"] = (s == cat).astype(int)
+        out = out.drop(columns=[col], errors="ignore")
+    return out
+
+
+def prepare(name, encoded):
+    """Same cleaning as step 10: keep model columns, fill gaps, log1p, scale."""
+    prep, scaler = B[name]["prep"], B[name]["scaler"]
+    X = encoded.reindex(columns=prep["features"]).apply(pd.to_numeric, errors="coerce").astype(float)
+    X = X.fillna(pd.Series(prep["fill_values"]))                       # missing values -> typical training value
+    if prep["log_cols"]:
+        X[prep["log_cols"]] = np.log1p(X[prep["log_cols"]].clip(lower=0))
+    X[prep["scale_cols"]] = scaler.transform(X[prep["scale_cols"]])
+    return X
+
+
+def predict(name, raw_df):
+    """raw rows in -> predictions out (probability, dollars or segment number)."""
+    X = prepare(name, encode(raw_df, SPEC[SPEC_OF[name]]))
+    model = B[name]["model"]
+    if name in ("churn", "fraud"):
+        return model.predict_proba(X)[:, 1]
+    if name == "segmentation":
+        return model.predict(X)
+    return np.clip(model.predict(X), 0, None)
+
+
+def importance(name):
+    """How much each feature matters to the model (used to decide which inputs to show first)."""
+    model, n = B[name]["model"], len(B[name]["features"])
+    model = getattr(model, "regressor_", model)
+    if hasattr(model, "feature_importances_"):
+        return np.abs(model.feature_importances_)
+    if hasattr(model, "coef_"):
+        return np.abs(np.ravel(model.coef_))
+    if hasattr(model, "cluster_centers_"):
+        return model.cluster_centers_.std(axis=0)
+    return np.ones(n)
+
+
+def input_fields(name):
+    """The 'raw' inputs behind a model: a number, or a category (several dummy columns = one drop-down).
+    Returns a list of (field, kind, options) from most to least important."""
+    spec, feats, imp = SPEC[SPEC_OF[name]], B[name]["features"], importance(name)
+    dummy_of = {f"{col}_{clean_name(c)}": col for col, info in spec["onehot"].items() for c in info["kept"]}
+    score, kind = {}, {}
+    for f, v in zip(feats, imp):
+        field = dummy_of.get(f, f)
+        score[field] = score.get(field, 0) + v
+        kind[field] = "category" if f in dummy_of else ("tier" if f in spec["ordinal"] else "number")
+    fields = []
+    for field in sorted(score, key=score.get, reverse=True):
+        if kind[field] == "category":
+            info = spec["onehot"][field]; options = [info["baseline"]] + list(info["kept"])
+        elif kind[field] == "tier":
+            options = list(spec["ordinal"][field].keys())
+        else:
+            options = None
+        fields.append((field, kind[field], options))
+    return fields
+
+
+def typical_value(names, field):
+    """The typical (training median or most common) value of a number field."""
+    for n in names:
+        v = B[n]["prep"]["fill_values"].get(field)
+        if v is not None:
+            return float(v)
+    return 0.0
+
+
+def draw_form(names, key):
+    """Draw the input widgets for the most important fields of one or more models. Returns {field: value}."""
+    chosen, seen = [], set()
+    for n in names:                                                    # top fields of each model, no duplicates
+        for field in input_fields(n)[:TOP_FIELDS]:
+            if field[0] not in seen:
+                seen.add(field[0]); chosen.append(field)
+    values, cols = {}, st.columns(3)
+    for i, (field, kind, options) in enumerate(chosen):
+        with cols[i % 3]:
+            if kind == "category":
+                values[field] = st.selectbox(nice(field), options, key=f"{key}_{field}")            # first option = most common level
+            elif kind == "tier":
+                typ = typical_value(names, field)                                                    # start on the typical tier
+                values[field] = st.selectbox(nice(field), options, index=min(int(round(typ)), len(options) - 1), key=f"{key}_{field}")
+            else:
+                binary = any(field in B[n]["prep"]["binary_cols"] for n in names)
+                typ = typical_value(names, field)
+                if binary:
+                    values[field] = st.selectbox(nice(field), [0, 1], index=int(round(typ)), format_func=lambda x: "Yes" if x == 1 else "No", key=f"{key}_{field}")
+                else:
+                    values[field] = st.number_input(nice(field), value=round(typ, 2), key=f"{key}_{field}", help=f"Typical value in the training data: {typ:,.2f}")
+    return values
+
+
+def status_banner(name):
+    status = B[name]["meta"].get("deployment_status", "")
+    verdict = B[name]["meta"].get("verdict", "")
+    if status.startswith("DO NOT") or status.startswith("HOLD"):
+        st.error(f"{TITLES[name]} model: NOT proven on the test data (verdict: {verdict}). Use it for testing only, not for decisions.")
+    elif status == "DEPLOY WITH CARE":
+        st.warning(f"{TITLES[name]} model: verdict {verdict}. Use it to rank and prioritise, and double-check important decisions.")
+
+
+def risk_text(p, threshold):
+    return ("HIGH RISK", "error") if p >= threshold else ("LOWER RISK", "success")
+
+
+# ---------------------------------------------------------------------
+# 4. PAGES
+# ---------------------------------------------------------------------
+OBJECTIVE = {"churn": "Reduce customer churn", "fraud": "Detect fraudulent transactions", "segmentation": "Segment customers and understand behaviour",
+             "clv": "Forecast customer lifetime value", "service": "Predict service and repair cost"}
+PAGE_OF = {"churn": "1. Customer churn", "fraud": "2. Fraud detection", "segmentation": "3. Segmentation and behaviour", "clv": "4. Lifetime value", "service": "5. Service cost"}
+
+
+def page_home():
+    st.title("🚗 Vantage Automotive: Business Operations Predictive Support System")
+    st.write("Five machine learning models that help the business decide **who to keep, which payments to check, "
+             "which customers matter most, and what a repair will cost.** Pick a page on the left.")
+    order = ["churn", "fraud", "segmentation", "clv", "service"]
+    rows = []
+    for i, n in enumerate(order, 1):
+        m = B[n]["meta"]
+        rows.append({"#": i, "Business objective": OBJECTIVE[n], "ML task": m["task"], "Champion model": m["champion"], "Verdict": m.get("verdict", "n/a"), "Status": m.get("deployment_status", "n/a"), "Page": PAGE_OF[n]})
+    st.subheader("The five models")
+    st.dataframe(pd.DataFrame(rows), hide_index=True)
+    st.subheader("Other pages")
+    st.markdown("- **Customer 360** : churn risk, expected spend and segment for one customer in one go, plus a recommended action.\n"
+                "- **Batch scoring** : upload a CSV with many rows, get predictions back, download them.\n"
+                "- **Model performance** : a report (not a prediction) showing how well each model did on the test data.")
+    st.caption("Predictions are decision support, not certainty. Fields you leave unchanged use the typical value from the training data.")
+
+
+def page_customer():
+    st.title("Customer 360: churn + lifetime value + segment")
+    st.write("One form, three models. Fill in what you know about the customer; anything you leave unchanged uses the typical value.")
+    for n in ("churn", "clv", "segmentation"):
+        status_banner(n)
+    with st.form("customer_form"):
+        values = draw_form(["churn", "clv", "segmentation"], "cust")
+        go = st.form_submit_button("Predict")
+    if not go:
+        return
+    row = pd.DataFrame([values])
+    p_churn, spend, seg = predict("churn", row)[0], predict("clv", row)[0], int(predict("segmentation", row)[0])
+    thr, avg = B["churn"]["meta"]["threshold"], B["clv"]["meta"]["evaluation"].get("avg_actual_spend", 0)
+    high_risk, high_value = p_churn >= thr, spend >= HIGH_VALUE_MULTIPLE * avg
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Churn probability", f"{p_churn:.0%}", "High risk" if high_risk else "Lower risk", delta_color="inverse" if high_risk else "normal")
+    c2.metric("Expected spend, next 12 months", f"${spend:,.0f}", "High value" if high_value else "Standard value", delta_color="off")
+    c3.metric("Customer segment", f"Segment {seg}")
+    st.progress(float(min(max(p_churn, 0), 1)), text=f"Churn risk (flag level: {thr:.0%})")
+    if high_risk and high_value:
+        st.error("**PROTECT NOW**: high value and likely to leave. Give this customer personal outreach from an account manager.")
+    elif high_value:
+        st.success("**GROW**: high value and loyal. Offer priority service or perks.")
+    elif high_risk:
+        st.warning("**LOW-COST WIN-BACK**: likely to leave but lower value. Send a low-cost automated offer.")
+    else:
+        st.info("**MAINTAIN**: no action needed beyond normal service.")
+    centres = pd.Series(B["segmentation"]["model"].cluster_centers_[seg], index=B["segmentation"]["features"]).sort_values()
+    st.caption("Segment %d stands out for: highest on %s; lowest on %s." % (seg, ", ".join(nice(f).lower() for f in centres.index[::-1][:3]), ", ".join(nice(f).lower() for f in centres.index[:2])))
+    st.caption("Churn probability is best used to rank customers: the model was trained to find leavers, so it errs on the high side.")
+
+
+def page_churn():
+    st.title("1. Customer churn: who is likely to leave?")
+    status_banner("churn")
+    with st.form("churn_form"):
+        values = draw_form(["churn"], "churn")
+        go = st.form_submit_button("Predict churn risk")
+    if not go:
+        return
+    p, thr = predict("churn", pd.DataFrame([values]))[0], B["churn"]["meta"]["threshold"]
+    label, kind = risk_text(p, thr)
+    st.metric("Churn probability", f"{p:.0%}", label, delta_color="inverse" if kind == "error" else "normal")
+    st.progress(float(min(max(p, 0), 1)), text=f"Flag level: {thr:.0%}")
+    if p >= thr:
+        st.error("**Add to the retention list.** Contact this customer with a retention offer.")
+    else:
+        st.success("Lower risk. Keep serving as normal.")
+    st.caption("Best used to rank customers: the model was trained to find leavers, so it errs on the high side.")
+
+
+def page_transaction():
+    st.title("2. Fraud detection: is this payment suspicious?")
+    status_banner("fraud")
+    with st.form("txn_form"):
+        values = draw_form(["fraud"], "txn")
+        go = st.form_submit_button("Check transaction")
+    if not go:
+        return
+    p, thr = predict("fraud", pd.DataFrame([values]))[0], B["fraud"]["meta"]["threshold"]
+    label, kind = risk_text(p, thr)
+    st.metric("Fraud probability", f"{p:.1%}", label, delta_color="inverse" if kind == "error" else "normal")
+    st.progress(float(min(max(p, 0), 1)), text=f"Review level: {thr:.1%}")
+    if p >= thr:
+        st.error("**SEND TO MANUAL REVIEW.** Check the customer and the payment before approving.")
+    else:
+        st.success("Below the review level. Approve as normal.")
+    st.caption("The review level was chosen on the training data. Risk is a ranking: higher means review sooner.")
+
+
+def segment_profile(seg):
+    """How a segment differs from the average customer, as plain-language behaviour traits.
+    The numbers are standard deviations from the average customer: above 0 = higher than average, below 0 = lower."""
+    centres = pd.Series(B["segmentation"]["model"].cluster_centers_[seg], index=B["segmentation"]["features"])
+    return centres
+
+
+def page_segmentation():
+    st.title("3. Segmentation and behaviour: what kind of customer is this?")
+    st.write("Customers are grouped by how they buy, use services, contact support and drive. Enter a customer to see their segment and behaviour profile.")
+    status_banner("segmentation")
+    with st.form("seg_form"):
+        values = draw_form(["segmentation"], "seg")
+        go = st.form_submit_button("Find segment")
+    k = B["segmentation"]["model"].n_clusters
+    if go:
+        seg = int(predict("segmentation", pd.DataFrame([values]))[0])
+        st.metric("Customer segment", f"Segment {seg} of {k}")
+        prof = segment_profile(seg).sort_values()
+        high, low = prof.index[::-1][:3], prof.index[:3]
+        st.write(f"**Behaviour profile:** this segment is **highest** on {', '.join(nice(f).lower() for f in high)} and **lowest** on {', '.join(nice(f).lower() for f in low)}.")
+        st.caption("Bars show how far the segment is from the average customer. Right of zero = above average, left = below average.")
+        shown = pd.concat([prof.head(6), prof.tail(6)]).drop_duplicates()
+        st.bar_chart(shown.rename(index=nice))
+    with st.expander("Compare all segments"):
+        table = pd.DataFrame(B["segmentation"]["model"].cluster_centers_, columns=B["segmentation"]["features"]).T
+        table.columns = [f"Segment {i}" for i in range(k)]
+        top = table.abs().max(axis=1).sort_values(ascending=False).head(12).index
+        st.write("Behaviour of each segment compared with the average customer (0 = average, positive = higher, negative = lower). The 12 features that separate the segments most:")
+        st.dataframe(table.loc[top].rename(index=nice).round(2))
+    st.caption("Segments are tiers on a continuum, not sharply separated groups. Customers near a boundary can move between segments.")
+
+
+def page_clv():
+    st.title("4. Lifetime value: how much will this customer spend?")
+    status_banner("clv")
+    with st.form("clv_form"):
+        values = draw_form(["clv"], "clv")
+        go = st.form_submit_button("Forecast spend")
+    if not go:
+        return
+    spend, avg = predict("clv", pd.DataFrame([values]))[0], B["clv"]["meta"]["evaluation"].get("avg_actual_spend", 0)
+    mae = B["clv"]["meta"]["evaluation"].get("metrics_champion", {}).get("mae", 0)
+    st.metric("Expected spend, next 12 months", f"${spend:,.0f}", "High value" if spend >= HIGH_VALUE_MULTIPLE * avg else "Standard value", delta_color="off")
+    st.write(f"The average customer spends about **${avg:,.0f}**. This customer is forecast at **{spend / avg:.1f}x** the average." if avg else "")
+    st.caption(f"Typical error per customer is about ${mae:,.0f}, so use it to rank and group customers, not to promise an exact amount.")
+
+
+def page_service():
+    st.title("5. Service cost: what will this job cost?")
+    status_banner("service")
+    with st.form("svc_form"):
+        values = draw_form(["service"], "svc")
+        go = st.form_submit_button("Estimate cost")
+    if not go:
+        return
+    cost = predict("service", pd.DataFrame([values]))[0]
+    mae = B["service"]["meta"]["evaluation"].get("metrics_champion", {}).get("mae", 0)
+    st.metric("Estimated cost of the job", f"${cost:,.0f}")
+    st.write(f"Likely range: **${max(cost - mae, 0):,.0f} to ${cost + mae:,.0f}** (typical error of the model is about ${mae:,.0f} per job).")
+    st.caption("Use as a rough quote or for planning. Very expensive repairs tend to be under-estimated.")
+
+
+def page_batch():
+    st.title("Batch scoring")
+    st.write("Upload a CSV with one row per customer, transaction or service job. The columns should have the **same names as your analytical base tables** "
+             "(for example `annual_income_usd`, `loyalty_tier`, `country`). Missing columns use the typical value.")
+    kind = st.selectbox("What are you scoring?", ["Customers (churn, lifetime value, segment)", "Transactions (fraud)", "Service jobs (cost)"])
+    names = {"Customers": ["churn", "clv", "segmentation"], "Transactions": ["fraud"], "Service": ["service"]}[kind.split(" ")[0]]
+    # a one-row template with every raw column the models use
+    template, seen = {}, set()
+    for n in names:
+        for field, k, options in input_fields(n):
+            if field not in seen:
+                seen.add(field); template[field] = options[0] if options else round(typical_value(names, field), 2)
+    id_col = {"churn": "customer_id", "fraud": "txn_id", "service": "service_id"}[names[0]]
+    st.download_button("Download an empty template (one example row)", pd.DataFrame([{id_col: "ID_1", **template}]).to_csv(index=False), "template.csv", "text/csv")
+    file = st.file_uploader("Upload your CSV", type="csv")
+    if file is None:
+        return
+    raw = pd.read_csv(file)
+    st.write(f"Loaded {len(raw):,} rows and {raw.shape[1]} columns.")
+    result = raw[[c for c in ID_COLUMNS if c in raw.columns]].copy()
+    if "churn" in names:
+        result["churn_probability"] = predict("churn", raw).round(4)
+        result["predicted_spend_usd"] = predict("clv", raw).round(2)
+        result["segment"] = predict("segmentation", raw)
+        thr, avg = B["churn"]["meta"]["threshold"], B["clv"]["meta"]["evaluation"].get("avg_actual_spend", 0)
+        hr, hv = result.churn_probability >= thr, result.predicted_spend_usd >= HIGH_VALUE_MULTIPLE * avg
+        result["action"] = np.select([hr & hv, hv, hr], ["PROTECT NOW", "GROW", "LOW-COST WIN-BACK"], "MAINTAIN")
+        result["revenue_risk_index"] = (result.churn_probability * result.predicted_spend_usd).round(0)
+        result = result.sort_values("revenue_risk_index", ascending=False)
+    elif "fraud" in names:
+        result["fraud_probability"] = predict("fraud", raw).round(4)
+        result["review_flag"] = np.where(result.fraud_probability >= B["fraud"]["meta"]["threshold"], "REVIEW", "ok")
+        result = result.sort_values("fraud_probability", ascending=False)
+    else:
+        result["predicted_cost_usd"] = predict("service", raw).round(2)
+    st.dataframe(result, hide_index=True)
+    st.download_button("Download predictions", result.to_csv(index=False), "predictions.csv", "text/csv")
+
+
+def page_performance():
+    st.title("Model performance: how good is each model?")
+    st.write("This is a report, not a prediction. It shows how each of the five models scored on customers, transactions and jobs it never saw during training.")
+    for n in NAMES:
+        m = B[n]["meta"]; ev = m["evaluation"]
+        with st.expander(f"{OBJECTIVE[n]}  |  {m['champion']}  |  {m.get('verdict', 'n/a')}", expanded=True):
+            st.write(f"**Task:** {m['task']}  |  **Status:** {m.get('deployment_status', 'n/a')}  |  **Features used:** {m['n_features']}")
+            if n in ("churn", "fraud"):
+                a = ev["metrics_at_threshold"]
+                st.write(f"PR AUC **{a['pr_auc']:.3f}** (no-skill {ev['no_skill_pr_auc']:.3f}) | ROC AUC **{a['roc_auc']:.3f}** | recall {a['recall']:.2f} | precision {a['precision']:.2f} | flag level {m['threshold']:.2f}")
+            elif n == "segmentation":
+                st.write(f"{ev['k']} segments | train silhouette {ev['separation']['train customers']['silhouette']:.2f} | test silhouette {ev['separation']['test customers']['silhouette']:.2f} | lowest stability (ARI) {min(ev['stability_ari'].values()):.2f}")
+            else:
+                a, b = ev["metrics_champion"], ev["metrics_baseline"]
+                st.write(f"MAE **${a['mae']:,.0f}** (predicting the median would give ${b['mae']:,.0f}) | R² **{a['r2']:.2f}** | ranking correlation {a.get('spearman', float('nan')):.2f}")
+            st.caption(f"Trained with scikit-learn {m['versions']['scikit-learn']}, saved {m['saved_at']}.")
+
+
+# ---------------------------------------------------------------------
+# 5. NAVIGATION
+# ---------------------------------------------------------------------
+PAGES = {"Home": page_home, "1. Customer churn": page_churn, "2. Fraud detection": page_transaction, "3. Segmentation and behaviour": page_segmentation,
+         "4. Lifetime value": page_clv, "5. Service cost": page_service, "Customer 360 (churn + value + segment)": page_customer,
+         "Batch scoring": page_batch, "Model performance": page_performance}
+st.sidebar.title("Vantage Automotive")
+choice = st.sidebar.radio("Go to", list(PAGES))
+st.sidebar.caption("Predictive support system built from five models: churn, fraud, segmentation, lifetime value and service cost.")
+PAGES[choice]()
+```
+
+### Code: Streamlit requirements (`requirements.txt`)
+
+```
+# the versions your models were trained with (from your step 17 output)
+scikit-learn==1.9.0
+numpy==2.4.6
+pandas==3.0.3
+joblib==1.5.3
+streamlit
+```
+
 ---
 
 ## 22. Key Findings and Insights
@@ -5405,152 +5942,6 @@ Script: `python/19_key_findings.py`. Findings are written from the saved results
 - Churn risk and predicted value together separate customers worth a personal call from customers who deserve a cheap automated message.
 - Effort aimed at small, well-chosen groups captures most of the value: the top 20% of customers by risk, the top 5% of transactions, one segment of three.
 
-### Code: key findings and insights (Python)
-
-```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 19: KEY FINDINGS AND INSIGHTS
-# Reads the real results of steps 13-16 (nothing is retrained) and writes them as plain-English findings:
-#   per objective: the result, what drives it, what it means for the business, and what to be careful about
-#   across objectives: the insights that only show when the five models are read together
-# Every sentence is built from your own output files, so the numbers are always the ones from your run.
-# Saves key_findings.md (for the README and Power BI text boxes), key_findings.csv and, if WRITE_TO_SQL = True,
-# the table bi_key_findings in SQL Server.
-# Needs: pandas numpy sqlalchemy pyodbc (SQL write only).
-# =====================================================================
-# %% 0. SETTINGS AND LOAD
-import os, json, warnings, urllib.parse
-import numpy as np, pandas as pd
-
-warnings.filterwarnings("ignore")
-OUT, WRITE_TO_SQL = "business_outputs", True
-SERVER, DATABASE = r"localhost\SQLEXPRESS", "Vantage_Automotive"
-TOP_N = 5
-
-def js(p):
-    with open(p) as f: return json.load(f)
-C, F, S = js("churn_outputs/churn_evaluation.json"), js("fraud_outputs/fraud_evaluation.json"), js("segmentation_outputs/segmentation_evaluation.json")
-V, W = js("clv_outputs/clv_evaluation.json"), js("service_outputs/service_evaluation.json")
-score = pd.read_csv(f"{OUT}/ml_objectives_scorecard.csv").set_index("no")
-roi_churn, roi_fraud = pd.read_csv(f"{OUT}/bi_churn_retention_roi.csv"), pd.read_csv(f"{OUT}/bi_fraud_review_roi.csv")
-actions, prof = pd.read_csv(f"{OUT}/bi_action_summary.csv"), pd.read_csv(f"{OUT}/bi_segment_profile.csv")
-fc_type, kpi = pd.read_csv(f"{OUT}/bi_service_forecast_by_type.csv"), pd.read_csv(f"{OUT}/bi_kpi_by_group.csv")
-imp = {k: pd.read_csv(f"{d}_outputs/feature_importance.csv", index_col=0) for k, d in [("churn", "churn"), ("fraud", "fraud"), ("clv", "clv"), ("service", "service")]}
-centres = pd.read_csv("segmentation_outputs/segment_centres.csv", index_col=0)
-seg_out = pd.read_csv("segmentation_outputs/segment_outcomes.csv")
-
-GOOD = ("STRONG", "USEFUL", "USEFUL (as tiers)")
-def ok(no): return score.loc[no].verdict in GOOD            # findings are worded by what the evidence supports
-def nice(c): return c.replace("_usd", "").replace("_", " ").replace("  ", " ")
-def money(x): return f"${x:,.0f}"
-findings = []
-def add(no, obj, kind, text): findings.append({"no": no, "objective": obj, "type": kind, "finding": text})
-
-def drivers(key, sign_col, up, down, n=TOP_N):
-    """top drivers by the size of their standardised coefficient; also flagged if the tree model agrees"""
-    d = imp[key]; top = d[sign_col].abs().sort_values(ascending=False).head(n).index
-    tree_top = set(d["tree_importance"].sort_values(ascending=False).head(10).index)
-    return [(f, d.loc[f, sign_col], f in tree_top) for f in top], up, down
-
-def driver_text(items, up, down, no=None):
-    note = "" if no is None or ok(no) else "NOT RELIABLE, the model is not proven on the test set, so treat these only as leads to check. "
-    parts = [f"{nice(f)} ({up if c > 0 else down})" + ("*" if both else "") for f, c, both in items]
-    return note + "; ".join(parts) + "   (* = also in the tree model's top 10, so the signal is confirmed by a second method)"
-
-# %% 1. OBJECTIVE 1 - CHURN
-no, o = 1, "Customer churn"; r = score.loc[no]
-m, t20 = C["metrics_at_threshold"], roi_churn.loc[roi_churn["contact_top_%"] == 20].iloc[0]
-add(no, o, "Result", f"{C['champion']} {'ranks leavers well above chance' if ok(no) else 'does NOT reliably beat chance'}: PR AUC {m['pr_auc']:.2f} against {C['no_skill_pr_auc']:.2f} for no skill, ROC AUC {m['roc_auc']:.2f} (verdict: {r.verdict}).")
-add(no, o, "Business", f"Contacting the riskiest 20% of customers reaches {t20['share_of_churners_%']:.0f}% of all churners (random contact would reach 20%). At a 25% save rate that is {money(t20.revenue_retained_usd)} retained for {money(t20.campaign_cost_usd)} of contacts.")
-it, up, dn = drivers("churn", "logistic_coef", "raises churn risk", "lowers churn risk"); add(no, o, "Drivers", driver_text(it, up, dn, no))
-tiers = kpi[kpi.dimension == "loyalty_tier"].sort_values("churn_rate")
-add(no, o, "Insight", f"Loyalty tier tracks churn: {tiers.iloc[0].value} customers churn at {100 * tiers.iloc[0].churn_rate:.0f}% against {100 * tiers.iloc[-1].churn_rate:.0f}% for {tiers.iloc[-1].value}, a gap of {100 * (tiers.iloc[-1].churn_rate - tiers.iloc[0].churn_rate):.0f} points.")
-add(no, o, "Caution", "Churn probabilities run higher than real churn because the model was trained with class weights. Use them to rank customers, not as forecasts of how many will leave.")
-
-# %% 2. OBJECTIVE 2 - FRAUD
-no, o = 2, "Fraud detection"; r = score.loc[no]
-m = F["metrics_at_threshold"]; f1, f5 = roi_fraud.loc[roi_fraud["review_top_%"] == 1].iloc[0], roi_fraud.loc[roi_fraud["review_top_%"] == 5].iloc[0]
-add(no, o, "Result", f"{F['champion']} reaches PR AUC {m['pr_auc']:.2f} against {F['no_skill_pr_auc']:.3f} for no skill (fraud is {100 * F['no_skill_pr_auc']:.1f}% of transactions) and ROC AUC {m['roc_auc']:.2f} (verdict: {r.verdict}).")
-add(no, o, "Business", f"{'Fraud is concentrated. ' if f5['share_of_fraud_usd_%'] >= 50 else 'Fraud is NOT concentrated enough to rely on a small review team. '}Reviewing only the riskiest 1% of transactions catches {f1['share_of_fraud_usd_%']:.0f}% of fraud value; the riskiest 5% catches {f5['share_of_fraud_usd_%']:.0f}% of value and {f5['share_of_fraud_cases_%']:.0f}% of cases, for {money(f5.review_cost_usd)} of review cost.")
-it, up, dn = drivers("fraud", "logistic_coef", "raises fraud risk", "lowers fraud risk"); add(no, o, "Drivers", driver_text(it, up, dn, no))
-add(no, o, "Caution", "Dollar figures count the full value of fraudulent transactions a reviewer would stop. Recoveries, chargebacks and customer friction from false alarms are not included.")
-
-# %% 3. OBJECTIVE 3 - SEGMENTATION
-no, o = 3, "Customer segmentation"; r = score.loc[no]
-add(no, o, "Result", f"K-Means with k = {S['k']} gives segments that are reproducible (lowest stability ARI {min(S['stability_ari'].values()):.2f}) and hold on unseen customers (test silhouette {S['separation']['test customers']['silhouette']:.2f} vs {S['noise_baseline_silhouette']:.2f} noise). Verdict: {r.verdict}.")
-sp = prof.sort_values("share_of_spend_%", ascending=False)
-for _, s in sp.iterrows():
-    cen = centres[f"Segment {int(s.segment)}"].sort_values(); hi = ", ".join(nice(x) for x in cen.index[::-1][:3]); lo = ", ".join(nice(x) for x in cen.index[:2])
-    add(no, o, "Business", f"Segment {int(s.segment)}: {s['share_of_customers_%']:.0f}% of customers, {s['share_of_spend_%']:.0f}% of next-year spend, churn {100 * s.churn_rate:.0f}%, average spend {money(s.avg_next_12m_spend)}. Highest on: {hi}. Lowest on: {lo}.")
-top_s, low_s = sp.iloc[0], sp.iloc[-1]
-ratio = top_s.avg_next_12m_spend / low_s.avg_next_12m_spend
-add(no, o, "Insight", (f"Segment {int(top_s.segment)} is the value engine: {top_s['share_of_customers_%']:.0f}% of customers produce {top_s['share_of_spend_%']:.0f}% of spend ({ratio:.1f}x the spend of segment {int(low_s.segment)})." if ratio >= 1.5
-     else f"The segments barely differ in spend (top segment {ratio:.1f}x the lowest), so they do not yet support differentiated treatment."))
-add(no, o, "Caution", "Customers form a continuum, not tight clusters, so segments work as tiers for targeting. Customers near a boundary can move between tiers.")
-
-# %% 4. OBJECTIVE 4 - CLV
-no, o = 4, "Customer lifetime value"; r = score.loc[no]
-c, b = V["metrics_champion"], V["metrics_baseline"]; v20 = next(x for x in V["gains_table"] if x["top_%_by_prediction"] == 20)
-add(no, o, "Result", f"{V['champion']} predicts next-year spend with MAE {money(c['mae'])} against {money(b['mae'])} for predicting the median ({100 * (1 - c['mae'] / b['mae']):.0f}% better), R2 {c['r2']:.2f}, ranking correlation {c['spearman']:.2f} (verdict: {r.verdict}).")
-add(no, o, "Business", f"The top 20% of customers by predicted spend hold {v20['share_of_all_spend_%']:.0f}% of real spend (best possible {v20['best_possible_%']:.0f}%, random 20%), {'so the ranking is reliable for choosing who gets premium service.' if ok(no) and c['spearman'] >= 0.5 else 'which is too close to random to use the ranking for decisions.'}")
-it, up, dn = drivers("clv", "ridge_coef", "raises spend", "lowers spend"); add(no, o, "Drivers", driver_text(it, up, dn, no))
-ct = kpi[kpi.dimension == "customer_type"].sort_values("avg_next_12m_spend", ascending=False)
-add(no, o, "Insight", f"{ct.iloc[0].value} customers spend {ct.iloc[0].avg_next_12m_spend / ct.iloc[-1].avg_next_12m_spend:.1f}x as much as {ct.iloc[-1].value} customers on average ({money(ct.iloc[0].avg_next_12m_spend)} against {money(ct.iloc[-1].avg_next_12m_spend)}).")
-add(no, o, "Caution", f"Typical error is large per customer (within 50% of the real value for {V['tolerance']['within_50%']:.0f}% of customers). Use predictions to rank and group, not to promise exact amounts. {'The model under-predicts on average.' if c['bias'] < 0 else ''}")
-
-# %% 5. OBJECTIVE 5 - SERVICE COST
-no, o = 5, "Service cost"; r = score.loc[no]
-c, b = W["metrics_champion"], W["metrics_baseline"]; tot = fc_type.actual_total.sum(); totp = fc_type.predicted_total.sum()
-add(no, o, "Result", f"{W['champion']} predicts the cost of a job with MAE {money(c['mae'])} against {money(b['mae'])} for the median ({100 * (1 - c['mae'] / b['mae']):.0f}% better), R2 {c['r2']:.2f} (verdict: {r.verdict}).")
-add(no, o, "Business", f"Totals are forecast far better than single jobs: whole-workshop cost is within {abs(100 * (totp - tot) / tot):.1f}% of actual, and every service type is within {fc_type['forecast_error_%'].abs().max():.0f}%. {'That is accurate enough for parts, labour and budget planning.' if ok(no) else 'Even so, the job-level model is not proven, so do not rely on it for planning yet.'}")
-it, up, dn = drivers("service", "ridge_coef", "raises cost", "lowers cost"); add(no, o, "Drivers", driver_text(it, up, dn, no))
-ft = fc_type.sort_values("actual_total", ascending=False); share2 = 100 * ft.head(2).actual_total.sum() / tot
-add(no, o, "Insight", f"{ft.iloc[0].service_type} and {ft.iloc[1].service_type} together are {share2:.0f}% of workshop cost; {ft.iloc[0].service_type} alone is {100 * ft.iloc[0].actual_total / tot:.0f}%.")
-add(no, o, "Caution", "Accuracy per single job is much weaker than accuracy of totals. Use job-level predictions for rough quotes only; very expensive repairs are under-predicted.")
-
-# %% 6. ACROSS OBJECTIVES
-pn = actions[actions.action.str.startswith("PROTECT")]; win = actions[actions.action.str.startswith("LOW-COST")]
-if len(pn) and ok(1) and ok(4):
-    p = pn.iloc[0]; add(0, "All objectives", "Insight", f"Churn and value together pick the customers that matter: {int(p.customers)} 'protect now' customers (high value and likely to leave) carry {money(p.actual_spend_lost_to_churn_usd)} of real next-year spend lost to churn, so they deserve personal outreach before any mass campaign.")
-if len(win) and ok(1):
-    w = win.iloc[0]; add(0, "All objectives", "Insight", f"{int(w.customers)} customers are likely to leave but lower value; a low-cost automated win-back message suits them better than a costly offer.")
-if ratio >= 1.5 and v20["share_of_all_spend_%"] >= 30 and f5["share_of_fraud_usd_%"] >= 50:
-    add(0, "All objectives", "Insight", f"Value is concentrated on three levels at once: segment {int(top_s.segment)} holds {top_s['share_of_spend_%']:.0f}% of spend, the top 20% of predicted customers hold {v20['share_of_all_spend_%']:.0f}% of spend, and {f5['share_of_fraud_usd_%']:.0f}% of fraud value sits in 5% of transactions. Effort aimed at small, well-chosen groups returns most of the benefit.")
-best = roi_churn.loc[roi_churn.net_benefit_usd.idxmax()]
-add(0, "All objectives", "Caution", f"Dollar results depend on assumptions you set in step 15 (save rate, contact cost, review cost). The retention net benefit is highest at the deepest contact level tested (top {int(best['contact_top_%'])}%) only because the assumed contact cost is small; real limits are budget and customer fatigue.")
-add(0, "All objectives", "Caution", "All results come from held-out test data from one dataset. Drivers are associations found by the models, not proof of cause.")
-
-# %% 7. PRINT, SAVE
-df = pd.DataFrame(findings)
-print("KEY FINDINGS AND INSIGHTS\n")
-for (no, obj), g in df.groupby(["no", "objective"], sort=True):
-    print(f"[{obj}]")
-    for _, r in g.iterrows(): print(f"  {r['type']:9s} {r.finding}")
-    print()
-md = ["# Key findings and insights\n"]
-for (no, obj), g in df.groupby(["no", "objective"], sort=True):
-    md.append(f"\n## {obj}\n")
-    for _, r in g.iterrows(): md.append(f"- **{r['type']}:** {r.finding}")
-os.makedirs(OUT, exist_ok=True)
-with open(f"{OUT}/key_findings.md", "w", encoding="utf-8") as fh: fh.write("\n".join(md) + "\n")
-df.to_csv(f"{OUT}/key_findings.csv", index=False)
-if WRITE_TO_SQL:
-    try:
-        import pyodbc
-        from sqlalchemy import create_engine
-        drivers_ = [d for d in pyodbc.drivers() if "SQL Server" in d]
-        pref = [d for d in drivers_ if "ODBC Driver 18" in d] + [d for d in drivers_ if "ODBC Driver 17" in d] + drivers_
-        conn = f"DRIVER={{{pref[0]}}};SERVER={SERVER};DATABASE={DATABASE};Trusted_Connection=yes;TrustServerCertificate=yes;"
-        engine = create_engine("mssql+pyodbc:///?odbc_connect=" + urllib.parse.quote_plus(conn))
-        out = df.copy()
-        for cc in out.columns:
-            if str(out[cc].dtype) in ("str", "string", "category"): out[cc] = out[cc].astype(object)
-        out.to_sql("bi_key_findings", engine, schema="dbo", if_exists="replace", index=False); print("Wrote bi_key_findings to", DATABASE)
-    except Exception as e:
-        print("SQL write skipped:", repr(e)[:300], "(the files are still saved)")
-print(f"\nDONE. key_findings.md and key_findings.csv saved in {os.path.abspath(OUT)}")
-```
-
 ---
 
 ## 23. Recommendations
@@ -5572,163 +5963,6 @@ Script: `python/20_recommendations.py`. Saved as `recommendations.md` and the `b
 | 11 | Monitor monthly (score distributions, flag rates, accuracy) and retrain on a schedule | Data science | Ongoing |
 
 Each recommendation in `recommendations.md` also lists its evidence, expected impact, KPI and guardrail. A model that is not marked STRONG or USEFUL gets "do not deploy" instead of an action plan.
-
-### Code: recommendations (Python)
-
-```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 20: RECOMMENDATIONS
-# Turns the findings into an action plan. Every recommendation says WHAT to do, WHO owns it, WHEN, the EVIDENCE
-# from your results, the expected IMPACT, the KPI that proves it worked, and the GUARDRAIL that limits the risk.
-# Built from your own result files (steps 15, 16, 19), so the numbers are the ones from your run.
-# An objective whose verdict is not STRONG/USEFUL gets "do not deploy, improve first" instead of an action plan.
-# Saves recommendations.md (for the README), recommendations.csv and, if WRITE_TO_SQL = True, bi_recommendations.
-# Needs: pandas numpy sqlalchemy pyodbc (SQL write only).
-# =====================================================================
-# %% 0. SETTINGS AND LOAD
-import os, json, warnings, urllib.parse
-import numpy as np, pandas as pd
-
-warnings.filterwarnings("ignore")
-OUT, WRITE_TO_SQL = "business_outputs", True
-SERVER, DATABASE = r"localhost\SQLEXPRESS", "Vantage_Automotive"
-HOLDOUT_SHARE = 0.10                     # share of contacted customers left untouched as a control group
-FRAUD_TARGET = 90                        # % of fraud value the review queue should capture
-
-def js(p):
-    with open(p) as f: return json.load(f)
-S = js("segmentation_outputs/segmentation_evaluation.json"); V = js("clv_outputs/clv_evaluation.json"); W = js("service_outputs/service_evaluation.json")
-score = pd.read_csv(f"{OUT}/ml_objectives_scorecard.csv").set_index("no")
-roi_churn, roi_fraud = pd.read_csv(f"{OUT}/bi_churn_retention_roi.csv"), pd.read_csv(f"{OUT}/bi_fraud_review_roi.csv")
-actions, prof = pd.read_csv(f"{OUT}/bi_action_summary.csv"), pd.read_csv(f"{OUT}/bi_segment_profile.csv")
-fc_type, fc_country, kpi = pd.read_csv(f"{OUT}/bi_service_forecast_by_type.csv"), pd.read_csv(f"{OUT}/bi_service_forecast_by_country.csv"), pd.read_csv(f"{OUT}/bi_kpi_by_group.csv")
-GOOD = ("STRONG", "USEFUL", "USEFUL (as tiers)")
-def ok(no): return score.loc[no].verdict in GOOD
-def money(x): return f"${x:,.0f}"
-recs = []
-def rec(no, obj, priority, when, owner, action, evidence, impact, kpi_, guardrail):
-    recs.append({"objective_no": no, "objective": obj, "priority": priority, "when": when, "owner": owner, "action": action,
-                 "evidence": evidence, "expected_impact": impact, "kpi": kpi_, "guardrail": guardrail})
-def hold(no, obj, why):
-    v = score.loc[no]
-    rec(no, obj, "High", "Now", "Data science", f"Do NOT deploy the {obj.lower()} model yet. Improve it first: {why}",
-        f"Step 16 verdict is {v.verdict} ({v.primary_metric} {v.result:.3f} against {v.benchmark_name} {v.benchmark:.3f}).",
-        "Avoids decisions built on a model that does not beat its benchmark.", "Verdict reaches USEFUL or STRONG in step 16", "Keep using the current manual process until then.")
-
-# %% 1. CHURN
-no, o = 1, "Customer churn"
-if ok(no):
-    t20 = roi_churn.loc[roi_churn["contact_top_%"] == 20].iloc[0]
-    pn, win = actions[actions.action.str.startswith("PROTECT")], actions[actions.action.str.startswith("LOW-COST")]
-    if len(pn):
-        p = pn.iloc[0]
-        rec(no, o, "High", "Now (0-30 days)", "Customer retention", f"Give the {int(p.customers)} 'protect now' customers (high value, likely to leave) personal outreach from an account manager, with a tailored offer.",
-            f"They carry {money(p.actual_spend_lost_to_churn_usd)} of real next-year spend that was lost to churn in the test set.", "Highest retained revenue per contact, because each customer is worth a lot.",
-            "Churn rate of contacted vs control customers; revenue retained per contact", f"Leave {HOLDOUT_SHARE:.0%} of them uncontacted as a control group, so you can measure the true effect of outreach.")
-    rec(no, o, "High", "Now (0-30 days)", "Marketing and CRM", f"Run a retention campaign on the riskiest 20% of customers, ranked by churn probability, starting from the 'protect now' list.",
-        f"The riskiest 20% contain {t20['share_of_churners_%']:.0f}% of all churners (random would be 20%).", f"About {money(t20.revenue_retained_usd)} retained for {money(t20.campaign_cost_usd)} of contacts at the step 15 assumptions (assumption-based, not guaranteed).",
-        "Net benefit; share of churners reached; save rate", f"Measure the real save rate in the first campaign, then replace the 25% assumption in step 15. Keep the {HOLDOUT_SHARE:.0%} control group.")
-    if len(win):
-        w = win.iloc[0]
-        rec(no, o, "Medium", "Next (30-90 days)", "Marketing and CRM", f"Send the {int(w.customers)} likely-to-leave, lower-value customers a low-cost automated win-back message instead of a costly offer.",
-            "Their expected value per customer is lower, so cost per contact must stay low.", "Keeps campaign cost down while still reaching most would-be churners.", "Cost per retained customer", "Cap the offer value below the customer's expected margin.")
-    tiers = kpi[kpi.dimension == "loyalty_tier"].sort_values("churn_rate", ascending=False)
-    rec(no, o, "Medium", "Next (30-90 days)", "Loyalty programme", f"Review the {tiers.iloc[0].value} loyalty tier, which churns most ({100 * tiers.iloc[0].churn_rate:.0f}% against {100 * tiers.iloc[-1].churn_rate:.0f}% for {tiers.iloc[-1].value}), and add upgrade or service benefits to keep those customers.",
-        f"Loyalty tier is the clearest group difference in churn ({100 * (tiers.iloc[0].churn_rate - tiers.iloc[-1].churn_rate):.0f}-point gap).", "Lowers churn at the source, beyond individual campaigns.", "Churn rate of the tier", "Test one change at a time so the effect can be read.")
-    rec(no, o, "Medium", "Ongoing", "Data science", "Use churn probability to rank customers only. Do not quote it as the expected number of leavers.",
-        "The model was trained with class weights, so its probabilities run higher than real churn rates.", "Prevents over-stating the revenue at risk.", "Calibration check each quarter", "If probabilities are needed as real chances, calibrate the model first.")
-else: hold(no, o, "add more behaviour signals close to the churn date (recent service visits, complaints, payment changes) and re-check the leakage rules.")
-
-# %% 2. FRAUD
-no, o = 2, "Fraud detection"
-if ok(no):
-    reach = roi_fraud[roi_fraud["share_of_fraud_usd_%"] >= FRAUD_TARGET]; pick = reach.iloc[0] if len(reach) else roi_fraud.iloc[-1]
-    top1 = roi_fraud.loc[roi_fraud["review_top_%"] == roi_fraud["review_top_%"].min()].iloc[0]
-    rec(no, o, "High", "Now (0-30 days)", "Fraud and risk operations", f"Send the riskiest {pick['review_top_%']:.0f}% of transactions to a manual review queue, highest risk first.",
-        f"That queue holds {pick['share_of_fraud_usd_%']:.0f}% of fraud value and {pick['share_of_fraud_cases_%']:.0f}% of fraud cases in the test set.", f"About {money(pick.fraud_usd_caught)} of fraud value caught for {money(pick.review_cost_usd)} of review cost at the step 15 assumption (assumption-based).",
-        "Fraud value caught; precision of flagged transactions; review hours", "Size the queue to analyst capacity. If the queue overflows, shrink it from the bottom, since risk is ranked.")
-    rec(no, o, "High", "Next (30-90 days)", "Payments and engineering", f"Place an automatic hold or step-up check on the riskiest {top1['review_top_%']:g}% of transactions, which already catches {top1['share_of_fraud_usd_%']:.0f}% of fraud value.",
-        "Fraud is concentrated in a very small slice of transactions.", "Stops the largest losses before money leaves.", "Fraud value stopped; customer complaints about holds", "Start in shadow mode (flag but do not block) for 2-4 weeks, then switch on.")
-    rec(no, o, "Medium", "Ongoing", "Data science", "Retrain monthly on the latest confirmed fraud labels and watch the flag rate for drift. The model was tested on later dates than it was trained on, so keep that time-based check.",
-        "Fraud patterns change as attackers adapt.", "Keeps performance from decaying quietly.", "PR AUC and flag rate each month", "Alert if the flag rate moves more than 30% from its baseline.")
-else: hold(no, o, "add device, velocity (transactions per hour) and merchant-risk features, and confirm labels are not delayed.")
-
-# %% 3. SEGMENTATION
-no, o = 3, "Customer segmentation"
-if ok(no):
-    sp = prof.sort_values("share_of_spend_%", ascending=False); top, low = sp.iloc[0], sp.iloc[-1]
-    rec(no, o, "High", "Next (30-90 days)", "Sales and customer experience", f"Treat segment {int(top.segment)} as the priority tier: dedicated service, early access to new models, loyalty perks.",
-        f"{top['share_of_customers_%']:.0f}% of customers give {top['share_of_spend_%']:.0f}% of next-year spend; churn {100 * top.churn_rate:.0f}%.", "Protects the largest source of revenue.", "Retention and spend of the tier", "Review monthly which customers enter or leave the tier.")
-    rec(no, o, "Medium", "Next (30-90 days)", "Marketing", f"Build growth offers for segment {int(low.segment)} (lowest spend, {money(low.avg_next_12m_spend)} on average) and keep their contact cost low.",
-        f"Its average spend is {top.avg_next_12m_spend / low.avg_next_12m_spend:.1f}x lower than the top segment.", "Moves lower-spend customers up where it is affordable.", "Spend per customer; cost to serve", "Do not give premium perks to lower tiers.")
-    rec(no, o, "Medium", "Ongoing", "Data science", "Use the segments as tiers, not hard categories. Refresh them each quarter and watch customers near a boundary.", "Customers form a continuum, not tight clusters.", "Keeps targeting consistent.", "Segment stability (ARI) each refit", "Re-run steps 7-14 for segmentation before using new segments.")
-else: hold(no, o, "re-check the feature set so that segments differ on churn and spend, then re-run the stability tests.")
-
-# %% 4. CLV
-no, o = 4, "Customer lifetime value"
-if ok(no):
-    v20 = next(x for x in V["gains_table"] if x["top_%_by_prediction"] == 20); ct = kpi[kpi.dimension == "customer_type"].sort_values("avg_next_12m_spend", ascending=False)
-    rec(no, o, "High", "Now (0-30 days)", "Sales and customer experience", "Rank customers by predicted next-year spend and give the top 20% priority service and account attention.",
-        f"The top 20% by prediction hold {v20['share_of_all_spend_%']:.0f}% of real spend (best possible {v20['best_possible_%']:.0f}%).", "Concentrates effort where most revenue sits.", "Spend and retention of the top 20%", "Use for ranking. Do not quote predicted dollars to customers.")
-    rec(no, o, "Medium", "Next (30-90 days)", "Marketing and finance", f"Set the maximum acquisition and retention spend per customer from predicted value, and review the {ct.iloc[0].value} customer type, which spends {ct.iloc[0].avg_next_12m_spend / ct.iloc[-1].avg_next_12m_spend:.1f}x as much as {ct.iloc[-1].value}.",
-        f"{ct.iloc[0].value} average spend is {money(ct.iloc[0].avg_next_12m_spend)} against {money(ct.iloc[-1].avg_next_12m_spend)}.", "Stops overspending on low-value customers.", "Return on marketing spend", f"Typical error is large for single customers (MAE {money(V['metrics_champion']['mae'])}), so set caps by group, not by customer.")
-    rec(no, o, "Medium", "Next (30-90 days)", "Data science", "Combine churn risk and predicted value into the four action groups (protect now, grow, win-back, maintain) in the Power BI customer view.",
-        "The step 15 action groups separate customers by risk and value.", "Gives each team one clear list to work from.", "Share of customers acted on", "Refresh the lists weekly from the saved models.")
-else: hold(no, o, "add richer history (spend trend, number of services, vehicle age and value) and check if the log target and outliers are handled.")
-
-# %% 5. SERVICE COST
-no, o = 5, "Service cost"
-if ok(no):
-    tot = fc_type.actual_total.sum(); ft = fc_type.sort_values("actual_total", ascending=False); err = abs(100 * (fc_type.predicted_total.sum() - tot) / tot)
-    rec(no, o, "High", "Next (30-90 days)", "Service operations and finance", f"Use the model's totals to plan parts stock, technician hours and budget by service type and branch country; start with {ft.iloc[0].service_type} and {ft.iloc[1].service_type}, which are {100 * ft.head(2).actual_total.sum() / tot:.0f}% of workshop cost.",
-        f"Whole-workshop cost is forecast within {err:.1f}% of actual and every service type is within {fc_type['forecast_error_%'].abs().max():.0f}%.", "Fewer stock-outs and over-orders; more accurate budgets.", "Monthly forecast error by service type", (f"The model tends to under-forecast (about {abs(fc_type['forecast_error_%'].mean()):.1f}% on average); add a matching buffer to budgets." if fc_type["forecast_error_%"].mean() < 0 else f"The model tends to over-forecast (about {fc_type['forecast_error_%'].mean():.1f}% on average); budgets built from it will carry a small cushion."))
-    rec(no, o, "Medium", "Next (30-90 days)", "Service operations", "Show a rough price range (not a single price) to advisors at booking, and route jobs predicted in the top 10% for cost to senior technicians.",
-        f"Job-level error is much larger than total error (MAE {money(W['metrics_champion']['mae'])}); {W['tolerance']['within_50%']:.0f}% of jobs are within 50% of the real cost.", "Fewer surprise bills and better job allocation.", "Share of quotes within 25% of final cost", "Do not use it as a fixed quote for expensive repairs.")
-    rec(no, o, "Low", "Ongoing", "Data science", "Compare forecast and actual cost every month by branch country and retrain when the error drifts.", "Cost levels move with parts prices and mix of work.", "Keeps the forecast reliable.", "Forecast error per country", "Alert if error moves outside the current range.")
-else: hold(no, o, "add parts-type and fault-code features and check why very expensive repairs are missed.")
-
-# %% 6. ACROSS OBJECTIVES
-rec(0, "All objectives", "High", "Now (0-30 days)", "Data science and engineering", "Deploy the objectives marked DEPLOY or DEPLOY WITH CARE in the Streamlit app, using the saved model, scaler, features and prep files from steps 17-18, with the same library versions.",
-    "Step 17 reloaded every saved file and reproduced the step 12 predictions exactly.", "Puts the models in front of the business users.", "Number of users and decisions made from the app", "Keep objectives marked HOLD or DO NOT DEPLOY out of the app.")
-rec(0, "All objectives", "High", "Now (0-30 days)", "Analytics", "Build the Power BI dashboards on the bi_* tables written to SQL Server (retention, fraud, segments, service forecast, model scorecard).",
-    "Steps 15, 16 and 19 already write these tables.", "One place for the business to read results.", "Dashboard use; refresh success", "Refresh after every scoring run so figures stay current.")
-rec(0, "All objectives", "High", "Next (30-90 days)", "Data science", "Test every campaign and every automated action against a control group, and use the measured results to replace the assumptions (save rate, contact cost, review cost).",
-    "The dollar results in step 15 rest on assumptions, not measurements.", "Turns estimated benefits into proven ones.", "Measured save rate and review cost", "Do not report estimated benefits as achieved.")
-rec(0, "All objectives", "Medium", "Ongoing", "Data science", "Set up monthly monitoring: score distribution, flag rates, and the accuracy of each model once true outcomes arrive. Retrain on a schedule or when a metric drifts.",
-    "Customer, fraud and service patterns change over time.", "Catches decay before it reaches decisions.", "Metric vs the step 16 scorecard", "A model whose metric falls below its benchmark is switched off until retrained.")
-rec(0, "All objectives", "Medium", "Ongoing", "Data governance", "Write a one-page model card per objective (purpose, data, limits, owner), keep customer data access limited, and avoid using protected traits as drivers of decisions.",
-    "Decisions affect customers directly (offers, holds, service priority).", "Fair, explainable use.", "Model cards completed", "Review drivers for unfair effects before launch.")
-
-# %% 7. PRINT, SAVE
-df = pd.DataFrame(recs); df["_p"] = df.priority.map({"High": 0, "Medium": 1, "Low": 2}); df["_o"] = df.objective_no.replace(0, 99)
-df = df.sort_values(["_o", "_p"]).drop(columns=["_p", "_o"]).reset_index(drop=True); df.insert(0, "id", [f"R{i + 1:02d}" for i in range(len(df))])
-print("RECOMMENDATIONS\n")
-for obj, g in df.groupby("objective", sort=False):
-    print(f"[{obj}]")
-    for _, r in g.iterrows():
-        print(f"  {r.id} [{r.priority} | {r.when} | {r.owner}] {r.action}\n      Evidence: {r.evidence}\n      Impact: {r.expected_impact}\n      KPI: {r.kpi} | Guardrail: {r.guardrail}")
-    print()
-md = ["# Recommendations\n"]
-for obj, g in df.groupby("objective", sort=False):
-    md.append(f"\n## {obj}\n")
-    for _, r in g.iterrows():
-        md.append(f"**{r.id} ({r.priority} priority, {r.when}, owner: {r.owner})** {r.action}\n- Evidence: {r.evidence}\n- Expected impact: {r.expected_impact}\n- KPI: {r.kpi}\n- Guardrail: {r.guardrail}\n")
-os.makedirs(OUT, exist_ok=True)
-with open(f"{OUT}/recommendations.md", "w", encoding="utf-8") as fh: fh.write("\n".join(md))
-df.to_csv(f"{OUT}/recommendations.csv", index=False)
-if WRITE_TO_SQL:
-    try:
-        import pyodbc
-        from sqlalchemy import create_engine
-        dr = [d for d in pyodbc.drivers() if "SQL Server" in d]; pref = [d for d in dr if "ODBC Driver 18" in d] + [d for d in dr if "ODBC Driver 17" in d] + dr
-        conn = f"DRIVER={{{pref[0]}}};SERVER={SERVER};DATABASE={DATABASE};Trusted_Connection=yes;TrustServerCertificate=yes;"
-        engine = create_engine("mssql+pyodbc:///?odbc_connect=" + urllib.parse.quote_plus(conn)); out = df.copy()
-        for cc in out.columns:
-            if str(out[cc].dtype) in ("str", "string", "category"): out[cc] = out[cc].astype(object)
-        out.to_sql("bi_recommendations", engine, schema="dbo", if_exists="replace", index=False); print("Wrote bi_recommendations to", DATABASE)
-    except Exception as e: print("SQL write skipped:", repr(e)[:300], "(the files are still saved)")
-print(f"\nDONE. {len(df)} recommendations. recommendations.md and recommendations.csv saved in {os.path.abspath(OUT)}")
-```
 
 ---
 
@@ -5783,220 +6017,6 @@ A churn sensitivity table shows net profit for every contact depth and save rate
 </p>
 <p align="center"><em>Programme cash flow, all initiatives</em></p>
 
-### Code: impact (Python)
-
-```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 21: IMPACT OF THE RECOMMENDATIONS (for stakeholder decisions)
-# Puts a dollar value on the step 20 recommendations, for the WHOLE customer base over one year, under three
-# scenarios (conservative / expected / optimistic), and says which ones to approve, pilot or defer.
-#   1. Churn retention     : revenue kept from the customers the model flags, converted to profit
-#   2. Fraud review        : fraud value stopped by the review queue, less the review cost
-#   3. Top-customer growth : extra spend from priority service for the top-20% predicted-value customers
-#   4. Service planning    : saving from better parts and labour planning
-#   + programme view       : build cost, running cost, 3-year cash flow, payback, NPV
-# EVIDENCE: what the test data proves is the model's ability to RANK (who leaves, which transaction is fraud).
-# What it cannot prove is how customers or fraudsters REACT. Those reactions (save rate, stop rate, margin,
-# uplift, planning saving, build cost) are ASSUMPTIONS in the block below. Each row says which kind it is.
-# Edit the assumptions with your own figures, or the ranges your stakeholders agree on, and re-run.
-# Saves 4 charts, impact_summary.md and CSVs to ./business_outputs and, if WRITE_TO_SQL = True, bi_impact_* tables.
-# Needs: pandas numpy matplotlib sqlalchemy pyodbc (SQL write only). Set SHOW = False to save charts only.
-# =====================================================================
-# %% 0. SETTINGS
-import os, json, warnings, urllib.parse
-import numpy as np, pandas as pd
-import matplotlib.pyplot as plt
-
-warnings.filterwarnings("ignore")
-DATA, OUT = "abt_data", "business_outputs"
-WRITE_TO_SQL, SHOW = True, True
-SERVER, DATABASE = r"localhost\SQLEXPRESS", "Vantage_Automotive"
-os.makedirs(OUT, exist_ok=True)
-plt.rcParams.update({"axes.spines.top": False, "axes.spines.right": False, "figure.dpi": 100})
-BLUE, RED, GREY, GREEN, AMBER = "#2F6DB5", "#C0392B", "#9AA5B1", "#2E8B57", "#E39C3A"
-pd.set_option("display.width", 220); pd.set_option("display.max_columns", 30)
-
-# ---- ASSUMPTIONS: (conservative, expected, optimistic). Edit these. ----
-SCEN = ["Conservative", "Expected", "Optimistic"]
-SAVE_RATE      = dict(zip(SCEN, (0.10, 0.25, 0.40)))   # share of contacted would-be churners the offer keeps
-GROSS_MARGIN   = dict(zip(SCEN, (0.15, 0.20, 0.25)))   # share of retained revenue that is profit
-STOP_RATE      = dict(zip(SCEN, (0.50, 0.70, 0.90)))   # share of fraud value in the review queue that is really stopped in time
-GROWTH_UPLIFT  = dict(zip(SCEN, (0.00, 0.01, 0.03)))   # extra spend from priority service for top-20% customers (no model evidence)
-PLANNING_SAVE  = dict(zip(SCEN, (0.0025, 0.0075, 0.015)))  # share of workshop cost saved by better planning (no model evidence)
-CONTACT_COST_USD, PROTECT_EXTRA_USD, REVIEW_COST_USD = 20, 80, 8   # per contact; extra per personal-outreach customer; per reviewed transaction
-FRAUD_TARGET = 90          # % of fraud value the review queue should capture (same rule as step 20)
-BUILD_COST_USD, RUN_COST_USD = 40_000, 15_000   # one-off build (app, dashboards, data work) and yearly running cost for all models
-DISCOUNT = 0.10; YEARS = 3
-
-def money(x): return f"${x:,.0f}"
-def save(name):
-    plt.tight_layout(); plt.savefig(f"{OUT}/{name}.png", dpi=150, bbox_inches="tight")
-    if SHOW: plt.show()
-    plt.close()
-
-# %% 1. LOAD RESULTS AND WORK OUT THE SCALE-UP FROM THE TEST SET TO THE WHOLE BUSINESS
-score = pd.read_csv(f"{OUT}/ml_objectives_scorecard.csv").set_index("no")
-roi_churn, roi_fraud = pd.read_csv(f"{OUT}/bi_churn_retention_roi.csv"), pd.read_csv(f"{OUT}/bi_fraud_review_roi.csv")
-actions = pd.read_csv(f"{OUT}/bi_action_summary.csv"); cust_act = pd.read_csv(f"{OUT}/bi_customer_actions.csv")
-churn_p, fraud_p, svc_p = (pd.read_pickle(f"{DATA}/{n}_test_predictions.pkl") for n in ("churn", "fraud", "service"))
-cust, abt_svc = pd.read_pickle(f"{DATA}/abt_customer.pkl"), pd.read_pickle(f"{DATA}/abt_service.pkl")
-GOOD = ("STRONG", "USEFUL", "USEFUL (as tiers)")
-def ok(no): return score.loc[no].verdict in GOOD
-
-cust_scale = len(cust) / len(churn_p)                                        # test customers -> all customers
-days = (pd.to_datetime(fraud_p.txn_date).max() - pd.to_datetime(fraud_p.txn_date).min()).days + 1
-fraud_scale = 365 / days                                                       # test period -> one year
-svc_scale = len(abt_svc) / len(svc_p)                                         # test jobs -> all jobs
-if "service_date" in abt_svc.columns:
-    d = pd.to_datetime(abt_svc.service_date); svc_years = max(((d.max() - d.min()).days + 1) / 365, 1 / 12)
-else:
-    svc_years = 1.0; print("NOTE: abt_service has no service_date, so the service data is treated as ONE year of work. Check this against your data.")
-print(f"Scale-up: customers x{cust_scale:.2f} | fraud test period {days} days -> x{fraud_scale:.2f} per year | service jobs x{svc_scale:.2f} over {svc_years:.1f} year(s)")
-print(f"Programme assumptions: build {money(BUILD_COST_USD)} once, run {money(RUN_COST_USD)} per year, discount rate {DISCOUNT:.0%}, horizon {YEARS} years")
-
-# %% 2. THE FOUR INITIATIVES, THREE SCENARIOS EACH (one year, whole business)
-rows = []
-def add(init, sc, kind, benefit_rev, benefit_profit, cost, evidence, note):
-    rows.append({"initiative": init, "scenario": sc, "kind": kind, "revenue_effect_usd": benefit_rev, "profit_benefit_usd": benefit_profit, "cost_usd": cost,
-                 "net_usd": benefit_profit - cost, "roi_x": (benefit_profit - cost) / cost if cost else np.nan, "evidence": evidence, "note": note})
-
-# 1. churn retention: contact the riskiest 20%; protect-now customers also get personal outreach
-t20 = roi_churn.loc[roi_churn["contact_top_%"] == 20].iloc[0]
-pn = actions[actions.action.str.startswith("PROTECT")]; n_pn = float(pn.customers.iloc[0]) if len(pn) else 0.0
-ch_cost = (t20.customers_contacted * CONTACT_COST_USD + n_pn * PROTECT_EXTRA_USD) * cust_scale
-for sc in SCEN:
-    rev = t20.spend_of_caught_churners_usd * cust_scale * SAVE_RATE[sc]
-    add("Churn retention (top 20% contacted)", sc, "model + assumed save rate", rev, rev * GROSS_MARGIN[sc], ch_cost, "Ranking proven on test; save rate assumed",
-        f"{int(t20.customers_contacted * cust_scale):,} contacts reach {t20['share_of_churners_%']:.0f}% of churners")
-# 2. fraud review queue
-reach = roi_fraud[roi_fraud["share_of_fraud_usd_%"] >= FRAUD_TARGET]; pick = reach.iloc[0] if len(reach) else roi_fraud.iloc[-1]
-fr_cost = pick.review_cost_usd * fraud_scale
-for sc in SCEN:
-    stopped = pick.fraud_usd_caught * fraud_scale * STOP_RATE[sc]
-    add(f"Fraud review (top {pick['review_top_%']:.0f}% reviewed)", sc, "model + assumed stop rate", stopped, stopped, fr_cost, "Ranking proven on test; stop rate assumed",
-        f"queue holds {pick['share_of_fraud_usd_%']:.0f}% of fraud value")
-# 3. growth in the top 20% of predicted-value customers
-top = cust_act.sort_values("predicted_spend_usd", ascending=False).head(int(round(len(cust_act) * 0.2)))
-top_spend = top.actual_spend_usd.sum() * cust_scale
-for sc in SCEN:
-    rev = top_spend * GROWTH_UPLIFT[sc]
-    add("Priority service for top-20% customers", sc, "assumption only", rev, rev * GROSS_MARGIN[sc], len(top) * cust_scale * CONTACT_COST_USD, "No model evidence for the uplift",
-        f"top 20% hold {money(top_spend)} of next-year spend")
-# 4. service planning
-workshop = svc_p.actual_cost_usd.sum() * svc_scale / svc_years
-for sc in SCEN:
-    add("Service parts and labour planning", sc, "assumption only", 0.0, workshop * PLANNING_SAVE[sc], 0.0, "Forecast accuracy proven; saving assumed", f"workshop cost about {money(workshop)} per year")
-imp = pd.DataFrame(rows)
-# initiatives are gated by the step 16 verdict: a model that is not proven delivers nothing
-gate = {"Churn": 1, "Fraud": 2, "Priority": 4, "Service": 5}
-for key, no in gate.items():
-    if not ok(no):
-        m = imp.initiative.str.startswith(key)
-        imp.loc[m, ["revenue_effect_usd", "profit_benefit_usd", "cost_usd", "net_usd"]] = 0.0
-        imp.loc[m, "roi_x"] = np.nan; imp.loc[m, "note"] = f"EXCLUDED: step 16 verdict is {score.loc[no].verdict}"
-
-pv = imp.pivot_table(index="initiative", columns="scenario", values="net_usd", aggfunc="sum")[SCEN]
-pv["evidence"] = imp.groupby("initiative")["evidence"].first(); pv["kind"] = imp.groupby("initiative")["kind"].first()
-print("\nNET ANNUAL IMPACT BY INITIATIVE (profit benefit minus the cost of running the initiative, whole business, USD)\n", pv.round(0).to_string())
-print("\nDetail (expected scenario)\n", imp[imp.scenario == "Expected"][["initiative", "revenue_effect_usd", "profit_benefit_usd", "cost_usd", "net_usd", "roi_x", "note"]].round(2).to_string(index=False))
-
-# %% 3. HOW STRONG IS THE EVIDENCE? TOTALS WITH AND WITHOUT THE ASSUMPTION-ONLY ITEMS
-backed = imp[imp.kind != "assumption only"].groupby("scenario").net_usd.sum().reindex(SCEN)
-allin = imp.groupby("scenario").net_usd.sum().reindex(SCEN)
-print("\nTOTAL NET ANNUAL IMPACT (before programme build and running cost)")
-print(pd.DataFrame({"model-backed initiatives only": backed, "all initiatives incl. assumption-only": allin}).round(0).T.to_string())
-
-# %% 4. PROGRAMME VIEW: BUILD COST, RUNNING COST, 3-YEAR CASH FLOW, PAYBACK, NPV
-prog = []
-for sc in SCEN:
-    for basis, tot in (("model-backed only", backed[sc]), ("all initiatives", allin[sc])):
-        flows = [-BUILD_COST_USD] + [tot - RUN_COST_USD] * YEARS
-        npv = sum(f / (1 + DISCOUNT) ** i for i, f in enumerate(flows)); yearly = tot - RUN_COST_USD
-        prog.append({"scenario": sc, "basis": basis, "annual_net_before_programme_cost": tot, "annual_net_after_run_cost": yearly,
-                     "payback_months": (12 * BUILD_COST_USD / yearly) if yearly > 0 else np.nan, "npv_3yr_usd": npv, "cumulative_3yr_usd": sum(flows)})
-prog = pd.DataFrame(prog)
-print("\nPROGRAMME RETURN (build cost once + running cost each year)\n", prog.round(1).to_string(index=False))
-
-# %% 5. DECISION GUIDE: APPROVE, PILOT OR DEFER
-dec = []
-for init, r in pv.iterrows():
-    proven = r["kind"] != "assumption only"
-    if r[SCEN[1]] == 0 and r[SCEN[0]] == 0: d, why = "DEFER", "model not proven or no benefit"
-    elif r[SCEN[0]] > 0 and proven: d, why = "APPROVE", "pays back even in the conservative case and rests on a model proven on test data"
-    elif r[SCEN[1]] > 0: d, why = "PILOT WITH CONTROL GROUP", "pays back in the expected case, but the key assumption must be measured first"
-    else: d, why = "DEFER", "does not pay back in the expected case"
-    dec.append({"initiative": init, "decision": d, "why": why, "conservative": r[SCEN[0]], "expected": r[SCEN[1]], "optimistic": r[SCEN[2]]})
-dec = pd.DataFrame(dec).sort_values("expected", ascending=False)
-print("\nDECISION GUIDE\n", dec.round(0).to_string(index=False))
-
-# %% 6. SENSITIVITY: WHAT MUST BE TRUE FOR THE CHURN CAMPAIGN TO PAY?
-depths = roi_churn["contact_top_%"].tolist(); saves = [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50]; mg = GROSS_MARGIN["Expected"]
-grid = pd.DataFrame({f"{int(s * 100)}%": [(r.spend_of_caught_churners_usd * cust_scale * s * mg) - (r.customers_contacted * CONTACT_COST_USD * cust_scale) for r in roi_churn.itertuples()] for s in saves},
-                    index=[f"top {d}%" for d in depths])
-be = pd.DataFrame({"contact_depth": [f"top {d}%" for d in depths],
-                   "break_even_save_rate_%": [100 * (r.customers_contacted * CONTACT_COST_USD) / (r.spend_of_caught_churners_usd * mg) if r.spend_of_caught_churners_usd > 0 else np.nan for r in roi_churn.itertuples()]})
-print(f"\nCHURN CAMPAIGN: annual net profit by contact depth (rows) and save rate (columns), margin {mg:.0%}\n", grid.round(0).to_string())
-print("\nBreak-even save rate (the campaign pays only if the real save rate is higher):\n", be.round(1).to_string(index=False))
-
-# %% 7. CHARTS
-fig, ax = plt.subplots(figsize=(11, 4.6)); x = np.arange(len(pv)); w = .26
-for i, (sc, col) in enumerate(zip(SCEN, (GREY, BLUE, GREEN))):
-    ax.bar(x + (i - 1) * w, pv[sc], w, color=col, label=sc)
-ax.axhline(0, color="black", lw=.8); ax.set_xticks(x); ax.set_xticklabels([f"{i}\n[{k}]" for i, k in zip(pv.index, pv.kind)], fontsize=8); ax.set_ylabel("net annual impact (USD)")
-ax.set_title("Net annual impact by initiative and scenario"); ax.legend(); save("21_1_initiative_scenarios")
-
-fig, ax = plt.subplots(figsize=(8, 4.4))
-for sc, col in zip(SCEN, (GREY, BLUE, GREEN)):
-    ax.bar(sc, backed[sc], color=col); ax.bar(sc, allin[sc] - backed[sc], bottom=backed[sc], color=col, alpha=.4, hatch="//")
-ax.axhline(0, color="black", lw=.8); ax.set_ylabel("net annual impact (USD)"); ax.set_title("Total impact: solid = model-backed, hatched = assumption-only")
-for sc in SCEN: ax.text(sc, max(allin[sc], backed[sc]), money(allin[sc]), ha="center", va="bottom", fontsize=9)
-save("21_2_total_evidence")
-
-fig, ax = plt.subplots(figsize=(9, 4.6)); im = ax.imshow(grid.values, aspect="auto", cmap="RdYlGn", vmin=-abs(grid.values).max(), vmax=abs(grid.values).max())
-ax.set_xticks(range(len(saves))); ax.set_xticklabels(grid.columns); ax.set_yticks(range(len(depths))); ax.set_yticklabels(grid.index)
-for i in range(grid.shape[0]):
-    for j in range(grid.shape[1]): ax.text(j, i, f"{grid.values[i, j] / 1000:,.0f}k", ha="center", va="center", fontsize=8)
-ax.set_xlabel("real save rate"); ax.set_title("Churn campaign: annual net profit (USD) by contact depth and save rate"); plt.colorbar(im, ax=ax); save("21_3_churn_sensitivity")
-
-fig, ax = plt.subplots(figsize=(8.5, 4.4)); yrs = np.arange(YEARS + 1)
-for sc, col in zip(SCEN, (GREY, BLUE, GREEN)):
-    r = prog[(prog.scenario == sc) & (prog.basis == "all initiatives")].iloc[0]; cum = np.cumsum([-BUILD_COST_USD] + [r.annual_net_after_run_cost] * YEARS)
-    ax.plot(yrs, cum, "o-", color=col, label=f"{sc}: payback {'%.0f months' % r.payback_months if pd.notna(r.payback_months) else 'none'}")
-ax.axhline(0, color="black", lw=.8); ax.set_xticks(yrs); ax.set_xlabel("year"); ax.set_ylabel("cumulative cash (USD)"); ax.set_title("Programme cash flow (all initiatives)"); ax.legend(); save("21_4_cumulative_cash")
-
-# %% 8. EXECUTIVE SUMMARY FOR STAKEHOLDERS
-e = prog[(prog.scenario == "Expected") & (prog.basis == "all initiatives")].iloc[0]; c = prog[(prog.scenario == "Conservative") & (prog.basis == "model-backed only")].iloc[0]
-md = ["# Impact of the recommendations\n",
-      f"**Expected annual net impact:** {money(allin['Expected'])} before programme costs; {money(backed['Expected'])} from the model-backed initiatives alone. Range across scenarios: {money(allin['Conservative'])} to {money(allin['Optimistic'])}.\n",
-      f"**Programme return (expected):** build {money(BUILD_COST_USD)}, run {money(RUN_COST_USD)} per year, {YEARS}-year NPV {money(e.npv_3yr_usd)}, payback {'%.0f months' % e.payback_months if pd.notna(e.payback_months) else 'not within the horizon'}.\n",
-      f"**Worst reasonable case:** conservative, model-backed initiatives only: {money(c.annual_net_before_programme_cost)} per year before programme cost, NPV {money(c.npv_3yr_usd)}.\n", "\n## Decisions\n"]
-for _, r in dec.iterrows(): md.append(f"- **{r.initiative}: {r.decision}.** Expected {money(r.expected)} (conservative {money(r.conservative)}, optimistic {money(r.optimistic)}). {r.why}.")
-md += ["\n## What the numbers rest on\n", "- Proven on held-out test data: the models rank customers and transactions well (step 16).",
-       "- Assumed, not proven: save rate, fraud stop rate, gross margin, growth uplift, planning saving, build and running cost (see the assumptions block of step 21).",
-       "- Next step to turn assumptions into facts: run each initiative against a control group and replace the assumption with the measured value.",
-       f"\n## Break-even\n\n- The churn campaign contacting the top 20% pays only if the real save rate is above {be.loc[be.contact_depth == 'top 20%', 'break_even_save_rate_%'].iloc[0]:.1f}% (assumed {SAVE_RATE['Expected']:.0%})."]
-with open(f"{OUT}/impact_summary.md", "w", encoding="utf-8") as fh: fh.write("\n".join(md) + "\n")
-print("\nEXECUTIVE SUMMARY\n" + "\n".join(md))
-
-# %% 9. SAVE
-imp.to_csv(f"{OUT}/impact_scenarios.csv", index=False); prog.to_csv(f"{OUT}/impact_programme.csv", index=False); dec.to_csv(f"{OUT}/impact_decisions.csv", index=False); grid.reset_index(names="contact_depth").to_csv(f"{OUT}/impact_churn_sensitivity.csv", index=False)
-if WRITE_TO_SQL:
-    try:
-        import pyodbc
-        from sqlalchemy import create_engine
-        dr = [d for d in pyodbc.drivers() if "SQL Server" in d]; pref = [d for d in dr if "ODBC Driver 18" in d] + [d for d in dr if "ODBC Driver 17" in d] + dr
-        conn = f"DRIVER={{{pref[0]}}};SERVER={SERVER};DATABASE={DATABASE};Trusted_Connection=yes;TrustServerCertificate=yes;"
-        engine = create_engine("mssql+pyodbc:///?odbc_connect=" + urllib.parse.quote_plus(conn))
-        for name, df in {"bi_impact_scenarios": imp, "bi_impact_programme": prog, "bi_impact_decisions": dec, "bi_impact_churn_sensitivity": grid.reset_index(names="contact_depth")}.items():
-            out = df.copy()
-            for cc in out.columns:
-                if str(out[cc].dtype) in ("str", "string", "category"): out[cc] = out[cc].astype(object)
-            out.to_sql(name, engine, schema="dbo", if_exists="replace", index=False)
-        print("\nWrote bi_impact_scenarios, bi_impact_programme, bi_impact_decisions, bi_impact_churn_sensitivity to", DATABASE)
-    except Exception as ex: print("\nSQL write skipped:", repr(ex)[:300], "(the files are still saved)")
-print(f"\nDONE. 4 charts, impact_summary.md and CSVs saved in {os.path.abspath(OUT)}")
-```
-
 ---
 
 ## 25. Conclusion (Power BI)
@@ -6019,106 +6039,6 @@ Five models, one pipeline, one app. The data was audited, cleaned and engineered
 **Power BI page:** reads `bi_conclusion` (one row per point) next to `bi_ml_scorecard` (verdict for each objective), so the last page of the report shows the same message as this section.
 
 **Next steps:** pilots with control groups, scheduled refresh of the `bi_*` tables, scheduled retraining and monitoring.
-
-### Code: conclusion (Python)
-
-```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 22: CONCLUSION
-# Closes the project in plain language: what was built, what it found, what it is worth, what to do next and
-# what to be careful about. Written from your own result files (steps 15-21), so every number is yours.
-# The wording follows the evidence: an objective that was not proven is reported as not proven.
-# Saves conclusion.md (for the README and the Power BI summary page), conclusion.csv and, if WRITE_TO_SQL = True,
-# the table bi_conclusion in SQL Server.
-# Needs: pandas sqlalchemy pyodbc (SQL write only).
-# =====================================================================
-# %% 0. SETTINGS AND LOAD
-import os, warnings, urllib.parse
-import pandas as pd
-
-warnings.filterwarnings("ignore")
-DATA, OUT, WRITE_TO_SQL = "abt_data", "business_outputs", True
-SERVER, DATABASE = r"localhost\SQLEXPRESS", "Vantage_Automotive"
-def money(x): return f"${x:,.0f}"
-score = pd.read_csv(f"{OUT}/ml_objectives_scorecard.csv")
-find = pd.read_csv(f"{OUT}/key_findings.csv"); rec = pd.read_csv(f"{OUT}/recommendations.csv")
-dec = pd.read_csv(f"{OUT}/impact_decisions.csv"); prog = pd.read_csv(f"{OUT}/impact_programme.csv"); imp = pd.read_csv(f"{OUT}/impact_scenarios.csv")
-n_cust, n_txn, n_svc = (len(pd.read_pickle(f"{DATA}/{n}.pkl")) for n in ("abt_customer", "abt_fraud", "abt_service"))
-GOOD = ("STRONG", "USEFUL", "USEFUL (as tiers)")
-score["proven"] = score.verdict.isin(GOOD); n_ok = int(score.proven.sum())
-
-# %% 1. BUILD THE CONCLUSION
-sec = []
-def add(section, text): sec.append({"section": section, "text": text})
-
-add("The project in brief", f"Vantage Motors Global is a fictional multinational carmaker. Using SQL Server, Python and Power BI, I turned its raw customer, vehicle, transaction, service, support and trip data into five machine learning models that answer five business questions: who will leave, which payments are fraud, what kinds of customers exist, how much each customer will spend, and what a service job will cost.")
-add("What was built", f"The data was audited and cleaned in SQL, engineered into three analytical base tables ({n_cust:,} customers, {n_txn:,} transactions, {n_svc:,} service jobs), then modelled in Python with leakage controls, train-only preparation, cross-validation inside the training data, and a final test on data the models never saw. Three kinds of model were used as the brief required: classification (churn, fraud), regression (lifetime value, service cost) and clustering (segmentation). Five candidate models were compared per objective against a no-skill benchmark.")
-
-lines = []
-for _, r in score.iterrows():
-    if r.ml_task.startswith("Clustering"): metric = f"silhouette {r.result:.2f} on test vs {r.benchmark:.2f} noise"
-    elif r.ml_task == "Regression": metric = f"MAE ${r.result:,.0f} vs ${r.benchmark:,.0f} for the median"
-    else: metric = f"PR AUC {r.result:.2f} vs {r.benchmark:.2f} for no skill"
-    lines.append(f"- **{r.business_objective}** {r.champion}: {metric}. Verdict: **{r.verdict}** ({r.deployment.lower()}). {r.business_result}.")
-add("Results", f"{n_ok} of 5 objectives passed the test-set bar.\n" + "\n".join(lines))
-
-top_find = find[(find.type.isin(["Insight", "Business"])) & (find.objective != "All objectives")]
-cross = find[(find.objective == "All objectives") & (find.type == "Insight")]
-bullets = [f"- {t}" for t in (cross.finding.tolist() + top_find.finding.tolist())[:5]] or ["- No insight is reported because no objective was proven."]
-add("What the data says", "\n".join(bullets))
-
-e = prog[(prog.scenario == "Expected") & (prog.basis == "all initiatives")].iloc[0]; c = prog[(prog.scenario == "Conservative") & (prog.basis == "model-backed only")].iloc[0]
-o_tot = imp.groupby("scenario").net_usd.sum()
-run_cost = e.annual_net_before_programme_cost - e.annual_net_after_run_cost                  # read back from step 21, so they always match
-build_cost = -(e.cumulative_3yr_usd - 3 * e.annual_net_after_run_cost)
-approved, pilot = dec[dec.decision == "APPROVE"].initiative.tolist(), dec[dec.decision.str.startswith("PILOT")].initiative.tolist()
-if o_tot.get("Expected", 0) > 0 and e.npv_3yr_usd > 0:
-    val = (f"Acting on the recommendations is worth about {money(o_tot['Expected'])} a year in the expected case (range {money(o_tot['Conservative'])} to {money(o_tot['Optimistic'])}). "
-           f"After a {money(build_cost)} build and {money(run_cost)} yearly running cost (my planning assumptions), the three-year NPV is {money(e.npv_3yr_usd)} and the programme pays back in {e.payback_months:.0f} months. "
-           f"Even in the conservative case using only the model-backed initiatives, the three-year NPV is {money(c.npv_3yr_usd)}.")
-else:
-    val = (f"On the current evidence the programme does not clearly pay for itself: expected annual impact {money(o_tot.get('Expected', 0))}, three-year NPV {money(e.npv_3yr_usd)}. "
-           "The models need to be improved before money is committed.")
-val += f" Approve now: {', '.join(approved) if approved else 'none'}. Pilot with a control group first: {', '.join(pilot) if pilot else 'none'}."
-add("What it is worth", val)
-
-high = rec[(rec.priority == "High") & (rec.objective_no != 0)].head(4)
-nxt = [f"- {r.action}" for _, r in high.iterrows()] + ["- Deploy the approved models in the Streamlit app and build the Power BI dashboards on the bi_* tables.", "- Measure the real save rate and fraud stop rate with control groups, and replace the assumptions."]
-add("What to do next", "\n".join(nxt))
-
-weak = score[~score.proven]
-lim = ["- The test data proves the models rank well. It does not prove how customers react to offers, so the dollar impacts rest on stated assumptions (save rate, margin, stop rate, build cost).",
-       "- Drivers shown by the models are associations, not proven causes.",
-       "- All data comes from one source and one period. Performance must be monitored and the models retrained as behaviour changes.",
-       "- Customer segments are tiers on a continuum, not sharply separated groups; customers near a boundary can switch segment."]
-if len(weak): lim.insert(0, f"- {len(weak)} objective(s) did not pass ({', '.join(weak.business_objective)}) and should not be used for decisions until improved.")
-add("Limits to keep in mind", "\n".join(lim))
-
-add("Final word", (f"The project shows that the data can already steer real decisions: {n_ok} of 5 models are good enough to use, with the biggest gains in {', '.join(approved) if approved else 'the areas that pass'}. "
-                   "The honest next step is to run controlled pilots, measure the real response, and let those results, not assumptions, decide how far to scale.") if n_ok else
-    "The project built the full pipeline and tested it honestly. The models do not yet beat their benchmarks, so the value now lies in the improved features and data that the next iteration will add.")
-
-df = pd.DataFrame(sec)
-md = ["# Conclusion\n"] + [f"\n## {r.section}\n\n{r.text}\n" for _, r in df.iterrows()]
-print("\n".join(md))
-os.makedirs(OUT, exist_ok=True)
-with open(f"{OUT}/conclusion.md", "w", encoding="utf-8") as fh: fh.write("\n".join(md))
-df.to_csv(f"{OUT}/conclusion.csv", index=False)
-
-# %% 2. SQL
-if WRITE_TO_SQL:
-    try:
-        import pyodbc
-        from sqlalchemy import create_engine
-        dr = [d for d in pyodbc.drivers() if "SQL Server" in d]; pref = [d for d in dr if "ODBC Driver 18" in d] + [d for d in dr if "ODBC Driver 17" in d] + dr
-        conn = f"DRIVER={{{pref[0]}}};SERVER={SERVER};DATABASE={DATABASE};Trusted_Connection=yes;TrustServerCertificate=yes;"
-        engine = create_engine("mssql+pyodbc:///?odbc_connect=" + urllib.parse.quote_plus(conn)); out = df.copy()
-        for cc in out.columns:
-            if str(out[cc].dtype) in ("str", "string", "category"): out[cc] = out[cc].astype(object)
-        out.to_sql("bi_conclusion", engine, schema="dbo", if_exists="replace", index=False); print("Wrote bi_conclusion to", DATABASE)
-    except Exception as ex: print("SQL write skipped:", repr(ex)[:300], "(the files are still saved)")
-print(f"\nDONE. conclusion.md and conclusion.csv saved in {os.path.abspath(OUT)}")
-```
 
 ---
 
