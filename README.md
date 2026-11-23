@@ -221,11 +221,6 @@ Script: `sql/01_data_quality_audit.sql`. It is read-only on the raw tables and w
 ### Code: data quality audit (T-SQL)
 
 ```sql
-/* =====================================================================
-   VANTAGE MOTORS GLOBAL - STEP 1: DATA QUALITY AUDIT (SQL Server)
-   READ-ONLY on the raw tables. Writes findings to dbo.audit_results only.
-   Run in SSMS in one query window. Change the database name below if needed.
-   ===================================================================== */
 USE [Vantage_Automotive];
 GO
 SET NOCOUNT ON;
@@ -450,16 +445,6 @@ Script: `sql/02_data_cleaning.sql`. It never edits the raw tables. It builds sev
 ### Code: data cleaning and error checking (T-SQL)
 
 ```sql
-/* =====================================================================
-   VANTAGE MOTORS GLOBAL - STEP 2: DATA CLEANING (raw -> clean_*)
-   Run in SSMS, top to bottom, in ONE query window (temp tables are used).
-   Assumes: raw tables imported as dbo.dim_branches, dbo.dim_customers,
-   dbo.dim_vehicles, dbo.fact_transactions, dbo.fact_service_records,
-   dbo.fact_support_interactions, dbo.fact_trips (all columns as text is fine).
-   Database: Vantage_Automotive.
-   Output: dbo.clean_<table> x7, dbo.quarantine_rows, dbo.map_values.
-   Missing values are left as NULL on purpose (impute in Python, train only).
-   ===================================================================== */
 USE [Vantage_Automotive];
 GO
 
@@ -866,17 +851,6 @@ Script: `sql/03_feature_engineering.sql`. It builds three feature tables, one fo
 ### Code: feature engineering (T-SQL)
 
 ```sql
-/* =====================================================================
-   VANTAGE MOTORS GLOBAL - STEP 3: FEATURE ENGINEERING (SQL Server)
-   Reads the clean_* tables from step 2 and builds three feature tables:
-     dbo.feat_customer     one row per customer     -> churn, CLV, segmentation
-     dbo.feat_transaction  one row per transaction  -> fraud
-     dbo.feat_service      one row per service job  -> service cost
-   Observation cutoff = 2025-12-31. Leakage columns are NOT carried over:
-     churn_date, last_activity_date, fraud_review_note, chargeback_flag,
-     parts_cost_usd, labor_cost_usd.
-   Missing values stay NULL (impute in Python, fitted on train only).
-   ===================================================================== */
 USE [Vantage_Automotive];
 GO
 
@@ -1088,15 +1062,6 @@ Script: `sql/04_relationship_table.sql`.
 ### Code: relationship table (T-SQL)
 
 ```sql
-/* =====================================================================
-   VANTAGE MOTORS GLOBAL - STEP 4: RELATIONSHIP TABLE (SQL Server)
-   1. Adds primary keys and foreign keys to the clean_* tables (star schema).
-   2. Builds dbo.table_relationships: every parent-child link with row counts,
-      orphan rows and match %. Power BI reads the keys and this table.
-   Run in ONE query window. Safe to re-run.
-   NOTE: if you ever re-run step 2 (cleaning), run section 0 below first,
-   otherwise DROP TABLE fails because foreign keys still point at the tables.
-   ===================================================================== */
 USE [Vantage_Automotive];
 GO
 
@@ -1243,126 +1208,123 @@ Script: `python/05_eda.py`. It reads the three feature tables from SQL Server, c
 #### Data overview and target balance
 
 <p align="center">
-  <img src="images/eda_01_missing_customers.png" alt="Share of missing values by customer column (filled after the split, on train only)" width="100%">
+  <img width="1192" height="726" alt="eda_01_missing_customers" src="https://github.com/user-attachments/assets/d7b5569a-7a65-4d9a-9dcf-485a9e47ac3b" />
 </p>
 <p align="center"><em>Share of missing values by customer column (filled after the split, on train only)</em></p>
 
 <p align="center">
-  <img src="images/eda_02_target_balance.png" alt="Target balance: churn is balanced enough, fraud is rare" width="100%">
+  <img width="1477" height="576" alt="eda_02_target_balance" src="https://github.com/user-attachments/assets/54addd07-eaa3-4543-9446-fac73ae1bec3" />
 </p>
 <p align="center"><em>Target balance: churn is balanced enough, fraud is rare</em></p>
 
 #### Objective 1: churn
 
 <p align="center">
-  <img src="images/eda_03_churn_by_category.png" alt="Churn rate by loyalty tier, customer type, country and acquisition channel" width="100%">
+  <img width="1778" height="1183" alt="eda_03_churn_by_category" src="https://github.com/user-attachments/assets/45517ea5-bd15-4c22-9885-0ad55f5aff76" />
 </p>
 <p align="center"><em>Churn rate by loyalty tier, customer type, country and acquisition channel</em></p>
 
 <p align="center">
-  <img src="images/eda_04_churn_by_behaviour.png" alt="Churn rate by support contacts, tenure and days since last purchase" width="100%">
+  <img width="2078" height="581" alt="eda_04_churn_by_behaviour" src="https://github.com/user-attachments/assets/9c4dd7f6-b730-4a8e-8385-7f293d9f53e4" />
 </p>
 <p align="center"><em>Churn rate by support contacts, tenure and days since last purchase</em></p>
 
 <p align="center">
-  <img src="images/eda_05_churn_numeric_boxplots.png" alt="Numeric features for churned and retained customers" width="100%">
+  <img width="1928" height="1026" alt="eda_05_churn_numeric_boxplots" src="https://github.com/user-attachments/assets/5b31cf55-4f6f-4894-81ea-d92fdb9791d6" />
 </p>
 <p align="center"><em>Numeric features for churned and retained customers</em></p>
 
 <p align="center">
-  <img src="images/eda_06_churn_correlations.png" alt="Top correlations with churn" width="100%">
+  <img width="1191" height="726" alt="eda_06_churn_correlations" src="https://github.com/user-attachments/assets/2b5901a8-17a2-48e7-99d5-b6049cd02656" />
 </p>
 <p align="center"><em>Top correlations with churn</em></p>
 
 #### Objective 2: fraud
 
 <p align="center">
-  <img src="images/eda_07_fraud_by_category.png" alt="Fraud rate by hour, payment method, channel, transaction type, international flag and country mismatch" width="100%">
+  <img width="2229" height="1182" alt="eda_07_fraud_by_category" src="https://github.com/user-attachments/assets/5b4dce98-005d-4d87-b105-f3f700947f0d" />
 </p>
 <p align="center"><em>Fraud rate by hour, payment method, channel, transaction type, international flag and country mismatch</em></p>
 
 <p align="center">
-  <img src="images/eda_08_fraud_behaviour.png" alt="Fraud rate by amount against the customer's usual and by number of prior transactions" width="100%">
+  <img width="1628" height="578" alt="eda_08_fraud_behaviour" src="https://github.com/user-attachments/assets/eea022f4-393c-45b6-afa1-92fcd7f533cd" />
 </p>
 <p align="center"><em>Fraud rate by amount against the customer's usual and by number of prior transactions</em></p>
 
 <p align="center">
-  <img src="images/eda_09_fraud_amount_distribution.png" alt="Transaction amount: fraud against legitimate (log scale)" width="100%">
+  <img width="1178" height="651" alt="eda_09_fraud_amount_distribution" src="https://github.com/user-attachments/assets/c46f430d-bb85-4800-8859-947323a857af" />
 </p>
 <p align="center"><em>Transaction amount: fraud against legitimate (log scale)</em></p>
 
 <p align="center">
-  <img src="images/eda_10_fraud_correlations.png" alt="Top correlations with fraud" width="100%">
+  <img width="1188" height="726" alt="eda_10_fraud_correlations" src="https://github.com/user-attachments/assets/2d9f0668-1ad0-43af-894e-9afe7ba3aa96" />
 </p>
 <p align="center"><em>Top correlations with fraud</em></p>
 
 #### Objective 3: customer segmentation (behaviour)
 
 <p align="center">
-  <img src="images/eda_18_behaviour_distributions.png" alt="Distribution of the behaviour features used for segmentation (log scale)" width="100%">
+  <img width="1629" height="576" alt="eda_11_clv_distribution" src="https://github.com/user-attachments/assets/df6cf55b-1a8b-4de7-ae5b-8fac05feae81" />
 </p>
 <p align="center"><em>Distribution of the behaviour features used for segmentation (log scale)</em></p>
 
 <p align="center">
-  <img src="images/eda_19_behaviour_correlation.png" alt="Correlation between behaviour features" width="100%">
+  <img width="1289" height="1036" alt="eda_19_behaviour_correlation" src="https://github.com/user-attachments/assets/b005db65-b7c3-460b-a0e3-e39c8fab6a91" />
 </p>
 <p align="center"><em>Correlation between behaviour features</em></p>
 
 <p align="center">
-  <img src="images/eda_20_value_concentration.png" alt="Customer share against spend share" width="100%">
+  <img width="1028" height="576" alt="eda_20_value_concentration" src="https://github.com/user-attachments/assets/ff64fe12-fa87-4d2a-874b-561e34c8cee6" />
 </p>
 <p align="center"><em>Customer share against spend share</em></p>
 
 #### Objective 4: customer lifetime value
 
 <p align="center">
-  <img src="images/eda_11_clv_distribution.png" alt="Distribution of next-12-month spend" width="100%">
+  <img width="1629" height="576" alt="eda_11_clv_distribution" src="https://github.com/user-attachments/assets/810a6d95-b1dc-4823-914e-ec78a53c34b4" />
 </p>
 <p align="center"><em>Distribution of next-12-month spend</em></p>
 
 <p align="center">
-  <img src="images/eda_12_clv_drivers.png" alt="Past spend against future spend, and spend by customer type and loyalty tier" width="100%">
+  <img width="2228" height="651" alt="eda_12_clv_drivers" src="https://github.com/user-attachments/assets/0e395de9-a48f-4b2f-ac8c-67f5259825da" />
 </p>
 <p align="center"><em>Past spend against future spend, and spend by customer type and loyalty tier</em></p>
 
 <p align="center">
-  <img src="images/eda_13_clv_correlations.png" alt="Top correlations with next-12-month spend" width="100%">
+  <img width="1188" height="726" alt="eda_13_clv_correlations" src="https://github.com/user-attachments/assets/4579992c-7537-43dc-ba07-f2ad15bf0bb3" />
 </p>
 <p align="center"><em>Top correlations with next-12-month spend</em></p>
 
 #### Objective 5: service cost
 
 <p align="center">
-  <img src="images/eda_14_service_cost_distribution.png" alt="Distribution of service cost" width="100%">
+  <img width="1629" height="576" alt="eda_14_service_cost_distribution" src="https://github.com/user-attachments/assets/b6554072-de05-4714-8c4d-c4800285b7d4" />
 </p>
 <p align="center"><em>Distribution of service cost</em></p>
 
 <p align="center">
-  <img src="images/eda_15_service_cost_by_category.png" alt="Service cost by service type, fuel type and warranty claim" width="100%">
+  <img width="2537" height="726" alt="eda_15_service_cost_by_category" src="https://github.com/user-attachments/assets/c00ef5a8-6b1f-4eac-aa8e-7a2b5880644c" />
 </p>
 <p align="center"><em>Service cost by service type, fuel type and warranty claim</em></p>
 
 <p align="center">
-  <img src="images/eda_16_service_cost_numeric.png" alt="Service cost against numeric features" width="100%">
+  <img width="2378" height="651" alt="eda_16_service_cost_numeric" src="https://github.com/user-attachments/assets/6ffd2f37-8044-402d-bf44-ff39148af8e5" />
 </p>
 <p align="center"><em>Service cost against numeric features</em></p>
 
 <p align="center">
-  <img src="images/eda_17_service_correlations.png" alt="Top correlations with service cost" width="100%">
+  <img width="1187" height="726" alt="eda_17_service_correlations" src="https://github.com/user-attachments/assets/2f09b1a5-cc83-49fd-ac71-02c05e6ada20" />
 </p>
 <p align="center"><em>Top correlations with service cost</em></p>
+
+<p align="center">
+ <img width="2089" height="1026" alt="eda_18_behaviour_distributions" src="https://github.com/user-attachments/assets/624f3495-8afc-417f-a905-a72f0a225d7b" />
+</p>
+<p align="center"><em>Distribution of the behaviour features used for segmentation (log scale)</em></p>
 
 ### Code: exploratory data analysis (Python)
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 5: EXPLORATORY DATA ANALYSIS (Python)
-# Reads the three feature tables from SQL Server (built in step 3).
-# Makes NO changes to the data. Saves every chart to ./eda_outputs.
-# Needs: pandas numpy matplotlib seaborn sqlalchemy pyodbc
-# Run cell by cell (# %% markers) in Kilo/VS Code, or as one script.
-# If you run it as a plain script, set SHOW = False so charts do not block.
-# =====================================================================
 # %% 0. SETTINGS AND CONNECTION
 import os, warnings, urllib.parse
 from decimal import Decimal
@@ -1629,18 +1591,6 @@ Rows are removed **only** when the target or the split date is missing. Everythi
 ### Code: analytical base tables, SQL build (T-SQL)
 
 ```sql
-/* =====================================================================
-   VANTAGE MOTORS GLOBAL - STEP 6: ANALYTICAL BASE TABLES (SQL Server)
-   Builds the final modelling tables from the feature tables (step 3):
-     dbo.abt_customer  one row per customer     -> churn, CLV, segmentation
-     dbo.abt_fraud     one row per transaction  -> fraud
-     dbo.abt_service   one row per service job  -> service cost
-   Also builds dbo.abt_data_dictionary and dbo.ml_model_map.
-   Rules applied: leakage columns are absent; rows are removed ONLY when the
-   target (or the split date) is missing; everything else stays NULL for
-   Python to impute on the training data. No train/test split here (step 9).
-   Run in ONE query window.
-   ===================================================================== */
 USE [Vantage_Automotive];
 GO
 
@@ -1751,12 +1701,6 @@ GO
 ### Code: analytical base tables, Python load
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 6 (Python part): LOAD AND CHECK THE ABTs
-# Loads abt_customer, abt_fraud, abt_service from SQL Server, checks them,
-# and saves local copies in ./abt_data so the later steps do not need SQL.
-# Needs: pandas numpy sqlalchemy pyodbc. Changes nothing in the database.
-# =====================================================================
 # %% 0. SETTINGS AND CONNECTION
 import os, warnings, urllib.parse
 from decimal import Decimal
@@ -1840,16 +1784,6 @@ Script: `python/07_encoding.py`.
 ### Code: encode categorical columns (Python)
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 7: ENCODE CATEGORICAL COLUMNS (Python)
-# Reads the ABTs saved in step 6 (./abt_data), encodes the text columns,
-# and saves encoded copies plus an encoding recipe (encoding_spec.json).
-# The recipe is what the Streamlit app will use later, so a new customer or
-# transaction is encoded exactly like the training data.
-# Method: ordinal for ordered columns (loyalty tier), one-hot for the rest.
-# Missing text values become their own level "Missing". No target is used,
-# so there is no leakage. Needs: pandas numpy.
-# =====================================================================
 # %% 0. SETTINGS
 import os, re, json
 import numpy as np, pandas as pd
@@ -1953,17 +1887,6 @@ Script: `python/08_separate_xy.py`. Each objective gets its own features (X) and
 ### Code: separate X and Y (Python)
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 8: SEPARATE X AND y (Python)
-# Reads the encoded tables from step 7 (./abt_data) and, for each of the
-# 5 models, separates the features (X) from the target (y).
-#   churn, fraud            -> classification
-#   clv, service            -> regression
-#   segmentation            -> clustering (X only, no y)
-# Keys, dates and the other model's target are kept aside in "meta" so they
-# can never leak into X, but are still available for the split (step 9) and
-# for writing predictions back to SQL Server later. Needs: pandas numpy.
-# =====================================================================
 # %% 0. SETTINGS
 import os, json, pickle
 import numpy as np, pandas as pd
@@ -2077,16 +2000,6 @@ Test sizes: 1,200 customers, 9,821 transactions (249 fraud cases), 2,810 service
 ### Code: train test split (Python)
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 9: TRAIN / TEST SPLIT (Python)
-# Reads the X/y files from step 8 (./abt_data) and splits each model.
-#   churn, clv, segmentation : ONE shared customer split, 80/20, stratified on churn
-#                              (the same customers are in train for all three models)
-#   fraud                    : time-based. Train = up to 2025-06-30, test = 2025-07-01 onward
-#   service                  : 80/20 grouped by vehicle_id (a vehicle is never in both sets)
-# Nothing is imputed or scaled here. That happens in step 10 using the TRAIN set only.
-# Needs: pandas numpy scikit-learn.
-# =====================================================================
 # %% 0. SETTINGS
 import pickle
 import numpy as np, pandas as pd
@@ -2192,16 +2105,6 @@ Saved per objective: `ready_<model>.pkl`, `scaler_<model>.joblib` and `prep_<mod
 ### Code: feature scaling (Python)
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 10: FEATURE SCALING OF NUMERICAL COLUMNS (Python)
-# Reads the splits from step 9 (./abt_data). For each model, ALL fitting is done
-# on the TRAIN set only, then applied to the test set:
-#   1. drop useless columns   (service: branch_region_* copies country; constant and duplicate columns)
-#   2. fill missing values    (median for numbers, most frequent for 0/1 columns)
-#   3. log1p the very skewed non-negative columns (skew > 1.5)
-#   4. StandardScaler on the continuous columns (0/1 columns are NOT scaled)
-# The targets (y) are not touched. Needs: pandas numpy scikit-learn joblib.
-# =====================================================================
 # %% 0. SETTINGS
 import os, json, pickle
 import numpy as np, pandas as pd
@@ -2317,40 +2220,40 @@ Scripts: `python/11_train_<objective>.py`, plus `python/11b_train_charts.py` for
 #### Objective 1: customer churn
 
 <p align="center">
-  <img src="images/churn_11_1_model_comparison.png" alt="Churn: five candidate models in cross-validation, train against cross-validated score" width="100%">
+  <img width="2385" height="717" alt="churn_11_1_model_comparison" src="https://github.com/user-attachments/assets/f1c12d36-08b9-425f-afd5-6fab95f9b97e" />
 </p>
 <p align="center"><em>Churn: five candidate models in cross-validation, train against cross-validated score</em></p>
 
 #### Objective 2: fraud detection
 
 <p align="center">
-  <img src="images/fraud_11_1_model_comparison.png" alt="Fraud: five candidate models in cross-validation, train against cross-validated score" width="100%">
+  <img width="2384" height="717" alt="fraud_11_1_model_comparison" src="https://github.com/user-attachments/assets/e4a98844-353b-4161-ac4f-09fd63f20840" />
 </p>
 <p align="center"><em>Fraud: five candidate models in cross-validation, train against cross-validated score</em></p>
 
 #### Objective 3: customer segmentation
 
 <p align="center">
-  <img src="images/segmentation_11_1_choosing_k.png" alt="Segmentation: choosing the number of segments (k) on train data" width="100%">
+  <img width="2681" height="546" alt="segmentation_11_1_choosing_k" src="https://github.com/user-attachments/assets/b895f096-78d8-4b13-bf5c-deeb47b6e3c7" />
 </p>
 <p align="center"><em>Segmentation: choosing the number of segments (k) on train data</em></p>
 
 <p align="center">
-  <img src="images/segmentation_11_2_segments_overview.png" alt="Segmentation: the three segments at a glance" width="100%">
+  <img width="1926" height="696" alt="segmentation_11_2_segments_overview" src="https://github.com/user-attachments/assets/51c7501c-6dd8-49bb-93e2-93737a97f6a6" />
 </p>
 <p align="center"><em>Segmentation: the three segments at a glance</em></p>
 
 #### Objective 4: customer lifetime value
 
 <p align="center">
-  <img src="images/clv_11_1_model_comparison.png" alt="Lifetime value: five candidate models in cross-validation, train against cross-validated score" width="100%">
+  <img width="2381" height="717" alt="clv_11_1_model_comparison" src="https://github.com/user-attachments/assets/c09e65dd-e8ac-48b3-a608-cbbbcfd6ac23" />
 </p>
 <p align="center"><em>Lifetime value: five candidate models in cross-validation, train against cross-validated score</em></p>
 
 #### Objective 5: service cost
 
 <p align="center">
-  <img src="images/service_11_1_model_comparison.png" alt="Service cost: five candidate models in cross-validation, train against cross-validated score" width="100%">
+  <img width="2381" height="717" alt="service_11_1_model_comparison" src="https://github.com/user-attachments/assets/7bf46aa3-cd68-4510-a8f4-ca2791a9fdf0" />
 </p>
 <p align="center"><em>Service cost: five candidate models in cross-validation, train against cross-validated score</em></p>
 
@@ -2359,16 +2262,6 @@ Scripts: `python/11_train_<objective>.py`, plus `python/11b_train_charts.py` for
 #### Objective 1: customer churn
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 11: TRAIN MODEL - OBJECTIVE 1: CUSTOMER CHURN
-# Task: classification. Target: churned (1 = customer left, 0 = retained).
-# Reads ready_churn.pkl from step 10 (./abt_data) and trains 5 classifiers on the
-# TRAIN set only. The test set is NOT touched here: predicting x_test and the
-# evaluation are the next steps.
-# To choose between algorithms fairly, each one is also cross-validated INSIDE the
-# training set (5 stratified folds). The best one by PR AUC is marked as the champion.
-# Needs: pandas numpy scikit-learn joblib.
-# =====================================================================
 # %% 0. SETTINGS
 import time, pickle, warnings
 import numpy as np, pandas as pd
@@ -2442,17 +2335,6 @@ print("Saved: churn_models.joblib (all 5 trained models + champion + feature lis
 #### Objective 2: fraud detection
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 11: TRAIN MODEL - OBJECTIVE 2: FRAUD DETECTION
-# Task: classification. Target: is_fraud (1 = fraudulent transaction).
-# Reads ready_fraud.pkl from step 10 (./abt_data) and trains 5 classifiers on the
-# TRAIN period only (transactions up to 2025-06-30). The test period is NOT touched.
-# Fraud is rare (about 2.4%), so every model is class-weighted, and the algorithms
-# are compared inside the training period with TIME-ORDERED cross-validation:
-# each fold trains on the earlier transactions and is scored on the next block,
-# which is how the model will really be used (predict tomorrow from yesterday).
-# Needs: pandas numpy scikit-learn joblib. Expect several minutes to run.
-# =====================================================================
 # %% 0. SETTINGS
 import time, pickle, warnings
 import numpy as np, pandas as pd
@@ -2539,18 +2421,6 @@ print("Saved: fraud_models.joblib (all 5 trained models + champion + feature lis
 #### Objective 3: customer segmentation
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 11: TRAIN MODEL - OBJECTIVE 3: CUSTOMER SEGMENTATION
-# Task: clustering (K-Means). There is no target: the model groups customers by behaviour.
-# Reads ready_segmentation.pkl from step 10 (./abt_data) and uses the TRAIN customers only
-# (the test customers are assigned to a segment in the next step).
-# How the number of segments (k) is chosen, for k = 2 to 8, all on the train customers:
-#   elbow (inertia), silhouette, Davies-Bouldin, Calinski-Harabasz, and STABILITY
-#   (re-cluster 10 random 80% samples and check the same customers stay together).
-# Rule: k must be 3 to 7 (fewer is not a segmentation, more is hard to act on), and every
-# segment must hold at least 5% of customers. Within that, the best average rank wins.
-# Set K_OVERRIDE to force a number. Needs: pandas numpy scikit-learn matplotlib joblib.
-# =====================================================================
 # %% 0. SETTINGS
 import pickle, warnings
 import numpy as np, pandas as pd
@@ -2640,17 +2510,6 @@ print("\nSaved: segmentation_model.joblib (K-Means + k + feature list), segmenta
 #### Objective 4: customer lifetime value
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 11: TRAIN MODEL - OBJECTIVE 4: CUSTOMER LIFETIME VALUE
-# Task: regression. Target: next_12m_spend_usd (what a customer will spend in the next 12 months).
-# Reads ready_clv.pkl from step 10 (./abt_data) and trains 5 regressors on the TRAIN customers only.
-# The test customers are NOT touched here: predicting x_test and the evaluation are next steps.
-# The target is very skewed (a few big spenders), so every model learns log(1 + spend) and its
-# predictions are converted back to dollars. Errors below are therefore in real dollars.
-# Models are compared with 5-fold cross-validation INSIDE the train set. The best one by MAE
-# (average dollar error) is marked as the champion.
-# Needs: pandas numpy scikit-learn joblib.
-# =====================================================================
 # %% 0. SETTINGS
 import time, pickle, warnings
 import numpy as np, pandas as pd
@@ -2736,18 +2595,6 @@ print("Saved: clv_models.joblib (all 5 trained models + champion + feature list)
 #### Objective 5: service cost
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 11: TRAIN MODEL - OBJECTIVE 5: SERVICE COST
-# Task: regression. Target: total_cost_usd (what a service job will cost the customer).
-# Reads ready_service.pkl from step 10 (./abt_data) and trains 5 regressors on the TRAIN service jobs only.
-# The test jobs are NOT touched here: predicting x_test and the evaluation are next steps.
-# The target is right-skewed (a few very expensive repairs), so every model learns log(1 + cost) and its
-# predictions are converted back to dollars. Errors below are therefore in real dollars.
-# Models are compared with 5-fold cross-validation INSIDE the train set, GROUPED BY VEHICLE: all jobs of a
-# vehicle stay in the same fold, matching how train and test were split (a vehicle is never in both).
-# The best model by MAE (average dollar error per job) is marked as the champion.
-# Needs: pandas numpy scikit-learn joblib.
-# =====================================================================
 # %% 0. SETTINGS
 import time, pickle, warnings
 import numpy as np, pandas as pd
@@ -2832,16 +2679,6 @@ print("Saved: service_models.joblib (all 5 trained models + champion + feature l
 #### Training charts for objectives 1, 2, 4 and 5
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 11b: TRAINING CHARTS (objectives 1, 2, 4, 5)
-# Draws one chart per objective from the training summaries saved by step 11:
-#   left   = cross-validated score of the five candidate models (champion highlighted)
-#   middle = train score vs cross-validated score (the gap shows over-fitting)
-#   right  = a second view of the same models (ROC AUC for classification, R2 for regression)
-# Reads abt_data/<objective>_training_summary.csv and <objective>_models.joblib. Changes nothing.
-# Saves <objective>_outputs/11_1_model_comparison.png (segmentation already saves its own training charts in step 11).
-# Needs: pandas matplotlib joblib scikit-learn. Set SHOW = False to save charts only.
-# =====================================================================
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -2915,13 +2752,6 @@ Scripts: `python/12_predict_<objective>.py`. Each script loads the saved models 
 #### Objective 1: customer churn
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 12: PREDICT x_test - OBJECTIVE 1: CUSTOMER CHURN
-# Loads the 5 trained churn models (step 11) and predicts the test customers.
-# For every model it stores the churn probability and the 0/1 prediction
-# (threshold 0.5). It does NOT calculate any score: the evaluation is a later step.
-# Needs: pandas numpy joblib.
-# =====================================================================
 # %% 0. SETTINGS
 import pickle
 import numpy as np, pandas as pd
@@ -2976,15 +2806,6 @@ print("\nSaved: churn_test_predictions.pkl and churn_test_predictions.csv in", D
 #### Objective 2: fraud detection
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 12: PREDICT x_test - OBJECTIVE 2: FRAUD DETECTION
-# Loads the 5 trained fraud models (step 11) and predicts the TEST PERIOD
-# (transactions from 2025-07-01 onward, never seen in training).
-# For every model it stores the fraud probability and the 0/1 prediction (threshold 0.5).
-# For the champion it also flags the top 2% highest-risk transactions, because a
-# fraud team has limited review capacity. It does NOT calculate any score: the
-# evaluation is a later step. Needs: pandas numpy joblib.
-# =====================================================================
 # %% 0. SETTINGS
 import pickle
 import numpy as np, pandas as pd
@@ -3045,16 +2866,6 @@ print("\nSaved: fraud_test_predictions.pkl and fraud_test_predictions.csv in", D
 #### Objective 3: customer segmentation
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 12: PREDICT x_test - OBJECTIVE 3: CUSTOMER SEGMENTATION
-# Assigns every TEST customer to the nearest segment of the K-Means model trained in step 11.
-# This is the "predict x_test" step for clustering: there is no right answer to compare with,
-# so instead of a score it shows (a) how many test customers land in each segment, compared
-# with train, (b) how close each customer sits to the centre of their segment, and (c) which
-# customers are borderline between two segments. The quality checks come in step 14.
-# Also writes ONE table with the segment of every customer (train + test), which is the table
-# we will write back to SQL Server for Power BI. Needs: pandas numpy joblib.
-# =====================================================================
 # %% 0. SETTINGS AND LOAD
 import pickle
 import numpy as np, pandas as pd
@@ -3118,13 +2929,6 @@ print(f"\nSaved: segmentation_test_assignments (.pkl/.csv) and segmentation_all_
 #### Objective 4: customer lifetime value
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 12: PREDICT x_test - OBJECTIVE 4: CUSTOMER LIFETIME VALUE
-# Loads the 5 trained CLV models (step 11) and predicts next-12-month spend (in dollars)
-# for the test customers. Predictions are never negative (clipped at 0).
-# It does NOT calculate any score: the evaluation is a later step.
-# Needs: pandas numpy joblib.
-# =====================================================================
 # %% 0. SETTINGS
 import pickle
 import numpy as np, pandas as pd
@@ -3179,13 +2983,6 @@ print("\nSaved: clv_test_predictions.pkl and clv_test_predictions.csv in", DATA)
 #### Objective 5: service cost
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 12: PREDICT x_test - OBJECTIVE 5: SERVICE COST
-# Loads the 5 trained service cost models (step 11) and predicts the cost of each test service job (in dollars).
-# Predictions are never negative (clipped at 0).
-# It does NOT calculate any score: the evaluation is a later step.
-# Needs: pandas numpy joblib.
-# =====================================================================
 # %% 0. SETTINGS
 import pickle
 import numpy as np, pandas as pd
@@ -3252,100 +3049,100 @@ Scripts: `python/13_compare_<objective>.py`.
 #### Objective 1: customer churn
 
 <p align="center">
-  <img src="images/churn_13_1_actual_vs_predicted.png" alt="Actual against predicted churn" width="100%">
+  <img width="2379" height="555" alt="churn_13_1_actual_vs_predicted" src="https://github.com/user-attachments/assets/c5a57185-c6bd-4938-bee0-164f92c9c3dd" />
 </p>
 <p align="center"><em>Actual against predicted churn</em></p>
 
 <p align="center">
-  <img src="images/churn_13_2_probability_by_outcome.png" alt="Predicted probability for churned and retained customers" width="100%">
+  <img width="1178" height="576" alt="churn_13_2_probability_by_outcome" src="https://github.com/user-attachments/assets/c44fc107-78f3-463f-8ccb-7cfe0ed03f89" />
 </p>
 <p align="center"><em>Predicted probability for churned and retained customers</em></p>
 
 <p align="center">
-  <img src="images/churn_13_3_feature_importance.png" alt="What drives churn: tree importance and standardised coefficients side by side" width="100%">
+  <img width="2091" height="801" alt="churn_13_3_feature_importance" src="https://github.com/user-attachments/assets/91f110ef-a665-4276-9dbb-2dc51ee2bb96" />
 </p>
 <p align="center"><em>What drives churn: tree importance and standardised coefficients side by side</em></p>
 
 <p align="center">
-  <img src="images/churn_13_4_top_features_vs_churn.png" alt="Churn rate across the values of the top drivers" width="100%">
+  <img width="2527" height="622" alt="churn_13_4_top_features_vs_churn" src="https://github.com/user-attachments/assets/d998b018-dbaf-4dba-b94a-2e7e33cf5278" />
 </p>
 <p align="center"><em>Churn rate across the values of the top drivers</em></p>
 
 #### Objective 2: fraud detection
 
 <p align="center">
-  <img src="images/fraud_13_1_actual_vs_predicted.png" alt="Actual against predicted fraud" width="100%">
+  <img width="2370" height="559" alt="fraud_13_1_actual_vs_predicted" src="https://github.com/user-attachments/assets/56660d4a-99dc-4f0d-a4bd-2a9e9b5d76e7" />
 </p>
 <p align="center"><em>Actual against predicted fraud</em></p>
 
 <p align="center">
-  <img src="images/fraud_13_2_probability_by_outcome.png" alt="Predicted probability for fraud and genuine payments" width="100%">
+  <img width="1176" height="576" alt="fraud_13_2_probability_by_outcome" src="https://github.com/user-attachments/assets/974fd196-b8c7-4d78-be65-6e3247f0fbb1" />
 </p>
 <p align="center"><em>Predicted probability for fraud and genuine payments</em></p>
 
 <p align="center">
-  <img src="images/fraud_13_3_feature_importance.png" alt="What drives fraud: tree importance and standardised coefficients side by side" width="100%">
+  <img width="2090" height="801" alt="fraud_13_3_feature_importance" src="https://github.com/user-attachments/assets/b28c1345-b176-4e8d-8991-358588a44cea" />
 </p>
 <p align="center"><em>What drives fraud: tree importance and standardised coefficients side by side</em></p>
 
 <p align="center">
-  <img src="images/fraud_13_4_top_features_vs_fraud.png" alt="Fraud rate across the values of the top drivers" width="100%">
+  <img width="2527" height="622" alt="fraud_13_4_top_features_vs_fraud" src="https://github.com/user-attachments/assets/33ad00e1-bcca-42ad-a8c2-0bf7983fb91e" />
 </p>
 <p align="center"><em>Fraud rate across the values of the top drivers</em></p>
 
 #### Objective 3: customer segmentation
 
 <p align="center">
-  <img src="images/segmentation_13_1_segment_profiles.png" alt="Segment profiles on the behaviour features" width="100%">
+  <img width="1290" height="1176" alt="segmentation_13_1_segment_profiles" src="https://github.com/user-attachments/assets/978aa9c1-ad10-4455-bda9-ac8c5a736e5f" />
 </p>
 <p align="center"><em>Segment profiles on the behaviour features</em></p>
 
 <p align="center">
-  <img src="images/segmentation_13_2_segment_outcomes.png" alt="Spend and churn by segment" width="100%">
+  <img width="2828" height="606" alt="segmentation_13_2_segment_outcomes" src="https://github.com/user-attachments/assets/79390b48-2530-415f-9849-fe735ebb0073" />
 </p>
 <p align="center"><em>Spend and churn by segment</em></p>
 
 #### Objective 4: customer lifetime value
 
 <p align="center">
-  <img src="images/clv_13_1_actual_vs_predicted.png" alt="Actual against predicted next-12-month spend" width="100%">
+  <img width="2526" height="553" alt="clv_13_1_actual_vs_predicted" src="https://github.com/user-attachments/assets/b9acb68d-5e4a-4b12-9926-91163921a41a" />
 </p>
 <p align="center"><em>Actual against predicted next-12-month spend</em></p>
 
 <p align="center">
-  <img src="images/clv_13_2_quartiles.png" alt="Actual and predicted spend by quartile" width="100%">
+  <img width="1031" height="576" alt="clv_13_2_quartiles" src="https://github.com/user-attachments/assets/95ba4f3b-3909-43dd-ace1-f2ba466aff0e" />
 </p>
 <p align="center"><em>Actual and predicted spend by quartile</em></p>
 
 <p align="center">
-  <img src="images/clv_13_3_feature_importance.png" alt="What drives spend: tree importance and standardised coefficients side by side" width="100%">
+  <img width="2090" height="801" alt="clv_13_3_feature_importance" src="https://github.com/user-attachments/assets/5adfd5ae-f3a3-4574-b1b6-85a483d6868e" />
 </p>
 <p align="center"><em>What drives spend: tree importance and standardised coefficients side by side</em></p>
 
 <p align="center">
-  <img src="images/clv_13_4_top_features_vs_spend.png" alt="Spend across the values of the top drivers" width="100%">
+  <img width="2530" height="622" alt="clv_13_4_top_features_vs_spend" src="https://github.com/user-attachments/assets/2c5d2f30-1c0b-4e4e-aa27-7ec79002e7e6" />
 </p>
 <p align="center"><em>Spend across the values of the top drivers</em></p>
 
 #### Objective 5: service cost
 
 <p align="center">
-  <img src="images/service_13_1_actual_vs_predicted.png" alt="Actual against predicted service cost" width="100%">
+  <img width="2526" height="553" alt="service_13_1_actual_vs_predicted" src="https://github.com/user-attachments/assets/802d4ca8-872e-47a4-8713-aad6181ea390" />
 </p>
 <p align="center"><em>Actual against predicted service cost</em></p>
 
 <p align="center">
-  <img src="images/service_13_2_quartiles.png" alt="Actual and predicted cost by quartile" width="100%">
+  <img width="1030" height="576" alt="service_13_2_quartiles" src="https://github.com/user-attachments/assets/65eb1b75-55d4-4234-88e8-d9e93dabc030" />
 </p>
 <p align="center"><em>Actual and predicted cost by quartile</em></p>
 
 <p align="center">
-  <img src="images/service_13_3_feature_importance.png" alt="What drives cost: tree importance and standardised coefficients side by side" width="100%">
+  <img width="2088" height="801" alt="service_13_3_feature_importance" src="https://github.com/user-attachments/assets/f185650b-34ee-432e-aa94-3a6f1489af00" />
 </p>
 <p align="center"><em>What drives cost: tree importance and standardised coefficients side by side</em></p>
 
 <p align="center">
-  <img src="images/service_13_4_top_features_vs_cost.png" alt="Cost across the values of the top drivers" width="100%">
+  <img width="2529" height="622" alt="service_13_4_top_features_vs_cost" src="https://github.com/user-attachments/assets/983ca767-a5bf-4eed-bca1-a6643d0c586c" />
 </p>
 <p align="center"><em>Cost across the values of the top drivers</em></p>
 
@@ -3354,16 +3151,6 @@ Scripts: `python/13_compare_<objective>.py`.
 #### Objective 1: customer churn
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 13: COMPARE FEATURES AND TARGET - OBJECTIVE 1: CHURN
-# Two comparisons, no scores yet (scores come in step 14):
-#   A. TARGET: actual churn (y_test) against predicted churn, as plain counts.
-#   B. FEATURES: which features the models use to separate churners from stayers,
-#      and how the churn rate changes across the values of the top features.
-# Feature importance comes from the trained models and the TRAIN data only.
-# Saves charts to ./churn_outputs. Needs: pandas numpy matplotlib scikit-learn joblib.
-# Run cell by cell, or set SHOW = False to save the charts without displaying them.
-# =====================================================================
 # %% 0. SETTINGS AND LOAD
 import os, pickle, warnings
 import numpy as np, pandas as pd
@@ -3469,16 +3256,6 @@ print(f"\nDONE. Charts and tables saved in: {os.path.abspath(OUT)}")
 #### Objective 2: fraud detection
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 13: COMPARE FEATURES AND TARGET - OBJECTIVE 2: FRAUD
-# Two comparisons, no scores yet (scores come in step 14):
-#   A. TARGET: actual fraud (y_test) against predicted fraud, as plain counts.
-#   B. FEATURES: which features the models use to separate fraud from legitimate
-#      transactions, and how the fraud rate changes across the values of the top features.
-# Feature importance comes from the trained models and the TRAIN period only.
-# Saves charts to ./fraud_outputs. Needs: pandas numpy matplotlib scikit-learn joblib.
-# Run cell by cell, or set SHOW = False to save the charts without displaying them.
-# =====================================================================
 # %% 0. SETTINGS AND LOAD
 import os, pickle, warnings
 import numpy as np, pandas as pd
@@ -3585,17 +3362,6 @@ print(f"\nDONE. Charts and tables saved in: {os.path.abspath(OUT)}")
 #### Objective 3: customer segmentation
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 13: COMPARE X AND y - OBJECTIVE 3: CUSTOMER SEGMENTATION
-# Clustering has no y, so the comparison is done in two parts:
-#   A. X: how the segments differ on the behaviour features the model used (original units).
-#   B. OUTCOMES NOT USED TO BUILD THE SEGMENTS: churn, next-12-month spend, customer type,
-#      loyalty tier and country. If the segments differ clearly on these, they carry real
-#      business meaning. If they do not, the segments are only statistical groupings.
-# Also checks that the segment profiles are the same on train and test customers.
-# No scores yet (silhouette etc. come in step 14). Saves charts to ./segmentation_outputs.
-# Needs: pandas numpy matplotlib scipy joblib. Set SHOW = False to save charts only.
-# =====================================================================
 # %% 0. SETTINGS AND LOAD
 import os, pickle, warnings
 import numpy as np, pandas as pd
@@ -3712,16 +3478,6 @@ print(f"\nDONE. Charts and tables saved in: {os.path.abspath(OUT)}")
 #### Objective 4: customer lifetime value
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 13: COMPARE FEATURES AND TARGET - OBJECTIVE 4: CUSTOMER LIFETIME VALUE
-# Two comparisons, no scores yet (scores come in step 14):
-#   A. TARGET: actual next-12-month spend (y_test) against predicted spend, in dollars.
-#   B. FEATURES: which features the models use to separate high spenders from low spenders,
-#      and how average spend changes across the values of the top features.
-# Feature importance comes from the trained models and the TRAIN data only.
-# Saves charts to ./clv_outputs. Needs: pandas numpy matplotlib scipy scikit-learn joblib.
-# Run cell by cell, or set SHOW = False to save the charts without displaying them.
-# =====================================================================
 # %% 0. SETTINGS AND LOAD
 import os, pickle, warnings
 import numpy as np, pandas as pd
@@ -3826,16 +3582,6 @@ print(f"\nDONE. Charts and tables saved in: {os.path.abspath(OUT)}")
 #### Objective 5: service cost
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 13: COMPARE FEATURES AND TARGET - OBJECTIVE 5: SERVICE COST
-# Two comparisons, no scores yet (scores come in step 14):
-#   A. TARGET: actual service job cost (y_test) against predicted cost, in dollars.
-#   B. FEATURES: which features the models use to separate expensive jobs from cheap jobs,
-#      and how typical cost changes across the values of the top features.
-# Feature importance comes from the trained models and the TRAIN data only.
-# Saves charts to ./service_outputs. Needs: pandas numpy matplotlib scipy scikit-learn joblib.
-# Run cell by cell, or set SHOW = False to save the charts without displaying them.
-# =====================================================================
 # %% 0. SETTINGS AND LOAD
 import os, pickle, warnings
 import numpy as np, pandas as pd
@@ -3971,55 +3717,55 @@ The champion is the model picked on train cross-validation. If another model sco
 #### Objective 1: customer churn
 
 <p align="center">
-  <img src="images/churn_14_1_roc_pr_gains.png" alt="ROC curve, precision-recall curve and cumulative gains (churn)" width="100%">
+  <img width="2528" height="696" alt="churn_14_1_roc_pr_gains" src="https://github.com/user-attachments/assets/c55035f5-1ead-47d4-acb4-173bda9eb655" />
 </p>
 <p align="center"><em>ROC curve, precision-recall curve and cumulative gains (churn)</em></p>
 
 <p align="center">
-  <img src="images/churn_14_2_metrics_and_calibration.png" alt="Metrics for all five models and calibration (churn)" width="100%">
+  <img width="1928" height="625" alt="churn_14_2_metrics_and_calibration" src="https://github.com/user-attachments/assets/405c391c-e56f-4785-993c-a29f0d24433c" />
 </p>
 <p align="center"><em>Metrics for all five models and calibration (churn)</em></p>
 
 #### Objective 2: fraud detection
 
 <p align="center">
-  <img src="images/fraud_14_1_roc_pr_gains.png" alt="ROC curve, precision-recall curve and cumulative gains (fraud)" width="100%">
+  <img width="2529" height="696" alt="fraud_14_1_roc_pr_gains" src="https://github.com/user-attachments/assets/caf8f953-a079-4141-b278-37a9cd676bd2" />
 </p>
 <p align="center"><em>ROC curve, precision-recall curve and cumulative gains (fraud)</em></p>
 
 <p align="center">
-  <img src="images/fraud_14_2_metrics_and_deciles.png" alt="Metrics for all five models and fraud by risk decile" width="100%">
+  <img width="1927" height="625" alt="fraud_14_2_metrics_and_deciles" src="https://github.com/user-attachments/assets/5eda1e57-34b8-4df0-b975-3bda2a0de3bc" />
 </p>
 <p align="center"><em>Metrics for all five models and fraud by risk decile</em></p>
 
 #### Objective 3: customer segmentation
 
 <p align="center">
-  <img src="images/segmentation_14_1_segmentation_quality.png" alt="Segmentation quality on unseen customers: silhouette, stability and outcome differences" width="100%">
+  <img width="2527" height="666" alt="segmentation_14_1_segmentation_quality" src="https://github.com/user-attachments/assets/5fba78bf-45e2-487f-b01d-be4fe4a1e567" />
 </p>
 <p align="center"><em>Segmentation quality on unseen customers: silhouette, stability and outcome differences</em></p>
 
 #### Objective 4: customer lifetime value
 
 <p align="center">
-  <img src="images/clv_14_1_scatter_residuals_gains.png" alt="Actual against predicted spend, residuals and cumulative gains (lifetime value)" width="100%">
+  <img width="2531" height="696" alt="clv_14_1_scatter_residuals_gains" src="https://github.com/user-attachments/assets/0bf5c56e-116d-4ac5-a82a-5dfdd9c81113" />
 </p>
 <p align="center"><em>Actual against predicted spend, residuals and cumulative gains (lifetime value)</em></p>
 
 <p align="center">
-  <img src="images/clv_14_2_metrics_and_calibration.png" alt="Metrics for all five models and calibration (lifetime value)" width="100%">
+  <img width="2561" height="625" alt="clv_14_2_metrics_and_calibration" src="https://github.com/user-attachments/assets/9d5b587a-fed8-4468-ad5c-0eb788790171" />
 </p>
 <p align="center"><em>Metrics for all five models and calibration (lifetime value)</em></p>
 
 #### Objective 5: service cost
 
 <p align="center">
-  <img src="images/service_14_1_scatter_residuals_gains.png" alt="Actual against predicted cost, residuals and cumulative gains (service cost)" width="100%">
+  <img width="2530" height="696" alt="service_14_1_scatter_residuals_gains" src="https://github.com/user-attachments/assets/a6337f32-68c8-4921-9a8e-df4ddc37b2f7" />
 </p>
 <p align="center"><em>Actual against predicted cost, residuals and cumulative gains (service cost)</em></p>
 
 <p align="center">
-  <img src="images/service_14_2_metrics_and_calibration.png" alt="Metrics for all five models and calibration (service cost)" width="100%">
+  <img width="2529" height="625" alt="service_14_2_metrics_and_calibration" src="https://github.com/user-attachments/assets/1df0107a-81ac-40d2-a616-81bb310d3d1e" />
 </p>
 <p align="center"><em>Metrics for all five models and calibration (service cost)</em></p>
 
@@ -4028,17 +3774,6 @@ The champion is the model picked on train cross-validation. If another model sco
 #### Objective 1: customer churn
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 14: EVALUATE MODEL - OBJECTIVE 1: CUSTOMER CHURN
-# Scores the 5 churn models on the TEST set (predictions from step 12), then
-# judges the champion chosen in step 11:
-#   1. metrics for all models (ROC AUC, PR AUC, precision, recall, F1, accuracy, Brier)
-#   2. the decision threshold, chosen on TRAIN cross-validation (never on the test set)
-#   3. bootstrap ranges (how much the scores could move on new customers)
-#   4. business view: how many churners the retention team catches by contacting the top 10/20/30% riskiest customers
-# Saves charts and churn_evaluation.json to ./churn_outputs.
-# Needs: pandas numpy matplotlib scikit-learn joblib. Set SHOW = False to save charts only.
-# =====================================================================
 # %% 0. SETTINGS AND LOAD
 import os, json, pickle, warnings
 import numpy as np, pandas as pd
@@ -4166,19 +3901,6 @@ print(f"\nDONE. Saved churn_evaluation.json, churn_test_metrics.csv, churn_top_k
 #### Objective 2: fraud detection
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 14: EVALUATE MODEL - OBJECTIVE 2: FRAUD DETECTION
-# Scores the 5 fraud models on the TEST PERIOD (predictions from step 12), then
-# judges the champion chosen in step 11:
-#   1. metrics for all models (ROC AUC, PR AUC, precision, recall, F1, Brier)
-#   2. the decision threshold, chosen on TRAIN time-ordered cross-validation (never on the test period)
-#   3. bootstrap ranges (how much the scores could move on new transactions)
-#   4. business view: how much fraud (cases and dollars) the team catches by reviewing the
-#      highest-risk 0.5%, 1%, 2%, 5% or 10% of transactions
-# Fraud is rare, so PR AUC and the review-budget table matter more than accuracy.
-# Saves charts and fraud_evaluation.json to ./fraud_outputs.
-# Needs: pandas numpy matplotlib scikit-learn joblib. Set SHOW = False to save charts only.
-# =====================================================================
 # %% 0. SETTINGS AND LOAD
 import os, json, pickle, warnings
 import numpy as np, pandas as pd
@@ -4326,20 +4048,6 @@ print(f"\nDONE. Saved fraud_evaluation.json, fraud_test_metrics.csv, fraud_revie
 #### Objective 3: customer segmentation
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 14: EVALUATE MODEL - OBJECTIVE 3: CUSTOMER SEGMENTATION
-# There is no right answer to score against, so a clustering model is judged on four questions:
-#   1. SEPARATION  - are customers closer to their own segment than to the others?
-#                    (silhouette, Davies-Bouldin, Calinski-Harabasz, on train AND test customers;
-#                     and compared with the same data with the structure destroyed = pure noise)
-#   2. STABILITY   - do the same customers stay together when we refit with other seeds,
-#                    other samples, or on the test customers alone?
-#   3. MEANING     - do the segments differ on outcomes the model never saw (churn, future spend)?
-#                    Measured on the TEST customers, which were never used to build the segments.
-#   4. VERDICT     - a plain-language summary built from rules of thumb.
-# Saves charts and segmentation_evaluation.json to ./segmentation_outputs.
-# Needs: pandas numpy matplotlib scikit-learn scipy joblib. Set SHOW = False to save charts only.
-# =====================================================================
 # %% 0. SETTINGS AND LOAD
 import os, json, pickle, warnings
 import numpy as np, pandas as pd
@@ -4474,17 +4182,6 @@ print(f"\nDONE. Saved segmentation_evaluation.json, 2 tables and 1 chart in {os.
 #### Objective 4: customer lifetime value
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 14: EVALUATE MODEL - OBJECTIVE 4: CUSTOMER LIFETIME VALUE
-# Scores the 5 CLV models on the TEST set (predictions from step 12), then judges the champion chosen in step 11:
-#   1. metrics for all models in dollars (MAE, RMSE, median error, R2, WAPE, bias) against a "predict the median" baseline
-#   2. bootstrap ranges (how much the scores could move on new customers) and the gain over the baseline
-#   3. where the model is wrong: error by spend size (big spenders are the hard part)
-#   4. business view: how much of the real spend sits in the customers the model ranks highest
-#   5. a plain verdict
-# Saves charts and clv_evaluation.json to ./clv_outputs.
-# Needs: pandas numpy matplotlib scipy scikit-learn joblib. Set SHOW = False to save charts only.
-# =====================================================================
 # %% 0. SETTINGS AND LOAD
 import os, json, pickle, warnings
 import numpy as np, pandas as pd
@@ -4613,17 +4310,6 @@ print(f"\nDONE. Saved clv_evaluation.json, clv_test_metrics.csv, clv_gains_table
 #### Objective 5: service cost
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 14: EVALUATE MODEL - OBJECTIVE 5: SERVICE COST
-# Scores the 5 service cost models on the TEST set (predictions from step 12), then judges the champion chosen in step 11:
-#   1. metrics for all models in dollars (MAE, RMSE, median error, R2, WAPE, bias) against a "predict the median" baseline
-#   2. bootstrap ranges (how much the scores could move on new jobs, resampling whole vehicles) and the gain over the baseline
-#   3. where the model is wrong: error by job cost size (the very expensive repairs are the hard part)
-#   4. business view: how much of the real cost sits in the jobs the model ranks as most expensive (quoting and parts planning)
-#   5. a plain verdict
-# Saves charts and service_evaluation.json to ./service_outputs.
-# Needs: pandas numpy matplotlib scipy scikit-learn joblib. Set SHOW = False to save charts only.
-# =====================================================================
 # %% 0. SETTINGS AND LOAD
 import os, json, pickle, warnings
 import numpy as np, pandas as pd
@@ -4808,54 +4494,38 @@ Fraud money is concentrated in a few large transactions, so a small queue covers
 ### Charts
 
 <p align="center">
-  <img src="images/business_15_1_churn_campaign.png" alt="Retention campaign: net benefit and churners caught by contact depth" width="100%">
+  <img width="1185" height="605" alt="business_15_1_churn_campaign" src="https://github.com/user-attachments/assets/54e53370-4b27-4780-97ce-ad0bca49e852" />
 </p>
 <p align="center"><em>Retention campaign: net benefit and churners caught by contact depth</em></p>
 
 <p align="center">
-  <img src="images/business_15_2_action_groups.png" alt="Customers per action group and real next-year spend lost to churn" width="100%">
+  <img width="1778" height="607" alt="business_15_2_action_groups" src="https://github.com/user-attachments/assets/3cb11558-89f7-4b3b-ab04-ab0d30ea2547" />
 </p>
 <p align="center"><em>Customers per action group and real next-year spend lost to churn</em></p>
 
 <p align="center">
-  <img src="images/business_15_3_fraud_review.png" alt="Fraud review: what a review team catches and what it costs" width="100%">
+  <img width="1779" height="606" alt="business_15_3_fraud_review" src="https://github.com/user-attachments/assets/54af058c-686c-437c-a7c2-349d6492750e" />
 </p>
 <p align="center"><em>Fraud review: what a review team catches and what it costs</em></p>
 
 <p align="center">
-  <img src="images/business_15_4_segments.png" alt="Segment size against spend share, and churn rate by segment" width="100%">
+  <img width="1777" height="606" alt="business_15_4_segments" src="https://github.com/user-attachments/assets/3f880e8f-25a2-4f90-93be-ce2ab58651a8" />
 </p>
 <p align="center"><em>Segment size against spend share, and churn rate by segment</em></p>
 
 <p align="center">
-  <img src="images/business_15_5_service_forecast.png" alt="Workshop cost: actual against predicted by service type, and forecast error by branch country" width="100%">
+  <img width="1938" height="636" alt="business_15_5_service_forecast" src="https://github.com/user-attachments/assets/e994aebc-5c8c-4f30-b74d-34f413475813" />
 </p>
 <p align="center"><em>Workshop cost: actual against predicted by service type, and forecast error by branch country</em></p>
 
 <p align="center">
-  <img src="images/business_15_6_kpi_churn.png" alt="Churn rate by customer group" width="100%">
+  <img width="2227" height="576" alt="business_15_6_kpi_churn" src="https://github.com/user-attachments/assets/d80cd344-ae10-4e60-b287-0a3cf68b55f5" />
 </p>
 <p align="center"><em>Churn rate by customer group</em></p>
 
 ### Code: business analysis (Python)
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 15: BUSINESS ANALYSIS
-# Turns the five models into decisions and dollar values, using only TEST-set predictions
-# (customers, transactions and jobs the models never saw), so the numbers are honest.
-#   A. Churn      : which customers to contact, and what the retention campaign could return
-#   B. Value + risk: who to protect, grow or maintain (churn risk x predicted lifetime value)
-#   C. Fraud      : how much fraud money a fixed review team catches, and what it costs
-#   D. Segments   : size, churn and spend of each customer segment (all customers)
-#   E. Service    : how well total workshop cost is forecast by service type and country
-#   F. KPIs       : churn and spend by country, loyalty tier and customer type
-# The dollar results rest on a few ASSUMPTIONS below (campaign cost, save rate...). They are
-# not facts from the data: edit them to your own figures and re-run.
-# Saves CSVs AND 6 business charts to ./business_outputs and, if WRITE_TO_SQL = True, the same tables to SQL Server
-# (bi_* tables in Vantage_Automotive) for Power BI.
-# Needs: pandas numpy matplotlib sqlalchemy pyodbc (SQL write only). Set SHOW = False to save charts without displaying them.
-# =====================================================================
 # %% 0. SETTINGS
 import os, json, pickle, warnings, urllib.parse
 import numpy as np, pandas as pd
@@ -5051,25 +4721,13 @@ Script: `python/16_ml_objectives.py`. One scorecard that puts each objective nex
 ### Charts
 
 <p align="center">
-  <img src="images/business_16_ml_objectives_scorecard.png" alt="Each model against its benchmark on the test set" width="100%">
+  <img width="2678" height="671" alt="business_16_ml_objectives_scorecard" src="https://github.com/user-attachments/assets/3b93e8ad-2fdf-4e4f-a385-9140b2feb93f" />
 </p>
 <p align="center"><em>Each model against its benchmark on the test set</em></p>
 
 ### Code: machine learning objectives (Python)
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 16: MACHINE LEARNING OBJECTIVES (SCORECARD)
-# Puts the five business objectives side by side and answers, for each one:
-#   what was asked, which ML task solves it, which model won, how well it did on the TEST set
-#   compared with a no-skill benchmark, whether that gain is real (95% bootstrap range),
-#   and whether it is ready to deploy.
-# It reads the evaluation files from step 14 (nothing is retrained or re-scored) and checks that the
-# files step 17 needs (model, scaler, features) exist.
-# Saves ml_objectives_scorecard.csv, ml_model_comparison.csv and a chart to ./business_outputs and,
-# if WRITE_TO_SQL = True, the same tables to SQL Server (bi_ml_scorecard, bi_ml_model_comparison).
-# Needs: pandas numpy matplotlib sqlalchemy pyodbc (SQL write only). Set SHOW = False to save the chart only.
-# =====================================================================
 # %% 0. SETTINGS AND LOAD
 import os, json, warnings, urllib.parse
 import numpy as np, pandas as pd
@@ -5236,19 +4894,6 @@ Script: `python/17_save_model_scaler_features.py`. Everything is written with **
 ### Code: save model, scaler and features (Python)
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 17: SAVE MODEL, SCALER AND FEATURES (joblib only)
-# For each of the 5 objectives it saves, into ./deployment, everything the Streamlit app needs:
-#   <name>_model.joblib     the champion model (K-Means for segmentation)
-#   <name>_scaler.joblib    the StandardScaler fitted on the TRAIN data
-#   <name>_features.joblib  the exact feature names, in the exact order the model expects
-#   <name>_prep.joblib      the cleaning recipe: columns used, fill values, log1p columns, scaled columns
-#   <name>_meta.joblib      task, target, champion, threshold, test results, verdict, library versions
-#   encoding_spec.joblib    the recipe that turns raw columns (text, tiers) into model columns
-# Then it LOADS every saved file back from disk and checks that the reloaded model reproduces the step 12
-# predictions exactly, so you know the files work before anything is deployed.
-# Only joblib is used to write files. Needs: pandas numpy scikit-learn joblib.
-# =====================================================================
 # %% 0. SETTINGS
 import os, sys, json, datetime, warnings
 import numpy as np, pandas as pd
@@ -5374,18 +5019,6 @@ streamlit run app.py
 ### Code: download model, scaler and features (Python)
 
 ```python
-# =====================================================================
-# VANTAGE MOTORS GLOBAL - STEP 18: DOWNLOAD MODEL, SCALER AND FEATURES
-# Packages the ./deployment folder from step 17 into ONE zip file you can download, move or upload
-# (for example into the Streamlit app repository on GitHub).
-#   vantage_deployment_package.zip
-#       models/            all <name>_model / scaler / features / prep / meta .joblib files + encoding_spec.joblib
-#       requirements.txt   the exact library versions the models were trained with
-#       MANIFEST.txt       every file with its size and SHA-256 fingerprint
-#       README.txt         what each file is and how to load it
-# It then OPENS the zip and loads every .joblib inside it, to prove the package is not damaged.
-# Needs: joblib. Nothing is retrained.
-# =====================================================================
 # %% 0. SETTINGS
 import os, io, sys, zipfile, hashlib, datetime, warnings
 import joblib
@@ -5488,18 +5121,6 @@ except ImportError:                                   # on your own computer the
 #   3. Segmentation    - which customer segment does a customer belong to? (clustering)
 #   4. Lifetime value  - how much will a customer spend next year?   (regression)
 #   5. Service cost    - how much will a service job cost?           (regression)
-#
-# HOW TO RUN (in the VS Code terminal, inside the folder that holds this file):
-#       pip install streamlit pandas numpy scikit-learn joblib
-#       streamlit run app.py
-#
-# FOLDER LAYOUT (unzip vantage_deployment_package.zip next to app.py):
-#       my_app/
-#         app.py
-#         models/   <- the 26 .joblib files from the zip  (churn_model.joblib, churn_scaler.joblib, ...)
-#
-# IMPORTANT: install the SAME library versions the models were trained with (they are in the zip's requirements.txt),
-# or the models may refuse to load.
 # =====================================================================
 import os
 import numpy as np
@@ -5998,22 +5619,22 @@ A churn sensitivity table shows net profit for every contact depth and save rate
 ### Charts
 
 <p align="center">
-  <img src="images/business_21_1_initiative_scenarios.png" alt="Net annual impact by initiative and scenario" width="100%">
+  <img width="1628" height="665" alt="business_21_1_initiative_scenarios" src="https://github.com/user-attachments/assets/a4137457-cfe3-4653-be20-ce3b43acbaad" />
 </p>
 <p align="center"><em>Net annual impact by initiative and scenario</em></p>
 
 <p align="center">
-  <img src="images/business_21_2_total_evidence.png" alt="Total impact: model-backed against assumption-only" width="100%">
+  <img width="1178" height="636" alt="business_21_2_total_evidence" src="https://github.com/user-attachments/assets/b467295e-0014-4f9e-8ee5-d2a6f9ba6884" />
 </p>
 <p align="center"><em>Total impact: model-backed against assumption-only</em></p>
 
 <p align="center">
-  <img src="images/business_21_3_churn_sensitivity.png" alt="Churn campaign: net profit by contact depth and save rate" width="100%">
+  <img width="1288" height="666" alt="business_21_3_churn_sensitivity" src="https://github.com/user-attachments/assets/ca5228c1-ba27-4703-af57-cbb92e30f6f9" />
 </p>
 <p align="center"><em>Churn campaign: net profit by contact depth and save rate</em></p>
 
 <p align="center">
-  <img src="images/business_21_4_cumulative_cash.png" alt="Programme cash flow, all initiatives" width="100%">
+  <img width="1251" height="636" alt="business_21_4_cumulative_cash" src="https://github.com/user-attachments/assets/32278200-a7e1-4e9b-9c4d-80106068404a" />
 </p>
 <p align="center"><em>Programme cash flow, all initiatives</em></p>
 
