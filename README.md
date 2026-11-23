@@ -1081,7 +1081,7 @@ Script: `sql/04_relationship_table.sql`.
 ### Charts
 
 <p align="center">
-  <img src="images/star_schema.png" alt="Star schema: dimensions (blue) and fact tables (orange)" width="100%">
+  <img width="1235" height="666" alt="star_schema" src="https://github.com/user-attachments/assets/27b26527-4854-44d6-808f-a9d7338147b5" />
 </p>
 <p align="center"><em>Star schema: dimensions (blue) and fact tables (orange)</em></p>
 
