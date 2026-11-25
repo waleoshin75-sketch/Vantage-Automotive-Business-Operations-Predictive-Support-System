@@ -5661,6 +5661,50 @@ Five models, one pipeline, one app. The data was audited, cleaned and engineered
 
 **Next steps:** pilots with control groups, scheduled refresh of the `bi_*` tables, scheduled retraining and monitoring.
 
+### Power BI dashboard
+
+Python writes every result back to SQL Server as a `bi_*` table, and Power BI reads those tables in Import mode. The dashboard has eight pages.
+
+<p align="center">
+  <img width="3075" height="1763" alt="powerbi_01_overview" src="https://github.com/user-attachments/assets/930067e6-ae8b-4562-8e01-e0f9c91c469e" />
+</p>
+<p align="center"><em>Overview: scorecard of the five objectives and the seven headline numbers</em></p>
+
+<p align="center">
+  <img width="3075" height="1763" alt="powerbi_02_churn_and_fraud" src="https://github.com/user-attachments/assets/2b2111e0-41d5-447e-b8a1-a5c881b29ad6" />
+</p>
+<p align="center"><em>Churn and fraud: how much each review budget catches</em></p>
+
+<p align="center">
+  <img width="3075" height="1763" alt="powerbi_03_service_and_segments" src="https://github.com/user-attachments/assets/daea7b0c-3c3e-4434-845c-8aeb406519ec" />
+</p>
+<p align="center"><em>Service forecast by country and service type, and the customer segments</em></p>
+
+<p align="center">
+  <img width="3075" height="1763" alt="powerbi_04_ml_objectives" src="https://github.com/user-attachments/assets/19ce41d7-c1d3-463a-8123-77c35359be26" />
+</p>
+<p align="center"><em>Machine learning objectives: champion, result and verdict, with the model comparison</em></p>
+
+<p align="center">
+  <img width="3075" height="1763" alt="powerbi_05_findings_recommendations" src="https://github.com/user-attachments/assets/f2909335-a026-4bb7-b4ce-ae9bb7070407" />
+</p>
+<p align="center"><em>Key findings and recommendations</em></p>
+
+<p align="center">
+  <img width="3075" height="960" alt="powerbi_06_business_impact" src="https://github.com/user-attachments/assets/903ccdb3-9112-4958-9240-7b9ad8642062" />
+</p>
+<p align="center"><em>Business impact: net annual impact by initiative and scenario</em></p>
+
+<p align="center">
+  <img width="3075" height="1763" alt="powerbi_07_business_impact_sensitivity" src="https://github.com/user-attachments/assets/aa4bdbce-6aef-4729-b1ec-e5357387f3c6" />
+</p>
+<p align="center"><em>Business impact: programme cash flow, decision guide and churn campaign sensitivity</em></p>
+
+<p align="center">
+  <img width="3075" height="1763" alt="powerbi_08_conclusion" src="https://github.com/user-attachments/assets/61823948-2e1f-41e1-8c46-b1a6cdf11518" />
+</p>
+<p align="center"><em>Conclusion</em></p>
+
 ---
 
 **Author:** Adewale Oshinukan | Data Scientist | [GitHub](https://github.com/waleoshin75-sketch) | [Live App](https://vantage-automotive-business-operations-predictive-support-syst.streamlit.app/)
