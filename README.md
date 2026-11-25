@@ -5691,7 +5691,7 @@ Python writes every result back to SQL Server as a `bi_*` table, and Power BI re
 <p align="center"><em>Key findings and recommendations</em></p>
 
 <p align="center">
-  <img width="3075" height="960" alt="powerbi_06_business_impact" src="https://github.com/user-attachments/assets/903ccdb3-9112-4958-9240-7b9ad8642062" />
+  <img width="3075" height="1763" alt="powerbi_06_business_impact (1)" src="https://github.com/user-attachments/assets/485c344d-bfae-46d4-a873-cea9aa3433be" />
 </p>
 <p align="center"><em>Business impact: net annual impact by initiative and scenario</em></p>
 
